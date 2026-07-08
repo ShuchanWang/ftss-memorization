@@ -1,5 +1,5 @@
 """
-Train MLP models at multiple data sizes to measure memorization vs transport gain.
+Train MLP models at multiple data sizes to measure memorization vs FTSS.
 Supports MNIST, CIFAR-10, CIFAR-100.
 Automatically skips training if checkpoint exists.
 """
@@ -408,4 +408,4 @@ for n in DATA_SIZES:
 
 print(f"\nCheckpoints saved to checkpoints/mlp_{DATASET_NAME}_n*_run*.pt")
 print(f"Sample images saved to figures/mlp_{DATASET_NAME}_n*_run*_samples.png")
-print(f"Now run transport gain tests with: python test_mlp.py --dataset {DATASET_NAME}")
+print(f"Now run FTSS tests with: python test_memorization_trend_mlp.py --dataset {DATASET_NAME}")

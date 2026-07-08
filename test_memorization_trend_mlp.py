@@ -1,6 +1,7 @@
 """
-Test transport gain for UNet-based flow matching model.
+Test FTSS for MLP-based flow matching model.
 Measures g(t) and memorization score M across data sizes.
+Supports MNIST, CIFAR-10, CIFAR-100.
 """
 
 import torch
@@ -30,101 +31,80 @@ DATASET_NAME = args.dataset
 # DATASET CONFIG
 # ============================================================================
 DATASET_CONFIGS = {
-    'mnist': {'img_size': 28, 'in_channels': 1, 'D': 784,
+    'mnist': {'img_size': 28, 'in_channels': 1, 'D': 784, 'hidden_dim': 2048,
               'data_sizes': [50, 100, 200, 500, 1000, 2000, 5000, 12000]},
-    'cifar10': {'img_size': 32, 'in_channels': 3, 'D': 3072,
+    'cifar10': {'img_size': 32, 'in_channels': 3, 'D': 3072, 'hidden_dim': 2048,
                 'data_sizes': [50, 100, 200, 500, 1000, 2000, 5000, 12000]},
-    'cifar100': {'img_size': 32, 'in_channels': 3, 'D': 3072,
+    'cifar100': {'img_size': 32, 'in_channels': 3, 'D': 3072, 'hidden_dim': 2048,
                  'data_sizes': [50, 100, 200, 500, 1000, 2000, 5000, 12000]},
 }
 
-cfg = DATASET_CONFIGS[DATASET_NAME]
-IMG_SIZE = cfg['img_size']
-IN_CHANNELS = cfg['in_channels']
+# Try to load actual config from checkpoint
+def get_config_from_checkpoint():
+    cfg = DATASET_CONFIGS[DATASET_NAME]
+    for n in cfg['data_sizes']:
+        for run in [0, 1]:
+            path = f"checkpoints/mlp_{DATASET_NAME}_n{n}_run{run}.pt"
+            if os.path.exists(path):
+                ckpt = torch.load(path, map_location='cpu')
+                if 'config' in ckpt:
+                    saved = ckpt['config']
+                    return {
+                        'D': saved.get('D', cfg['D']),
+                        'hidden_dim': saved.get('hidden_dim', cfg['hidden_dim']),
+                        'img_size': saved.get('img_size', cfg['img_size']),
+                        'in_channels': saved.get('in_channels', cfg['in_channels']),
+                        'data_sizes': cfg['data_sizes'],
+                    }
+    return cfg
+
+cfg = get_config_from_checkpoint()
 D = cfg['D']
+HIDDEN_DIM = cfg['hidden_dim']
+IMG_SIZE = cfg.get('img_size', 28)
+IN_CHANNELS = cfg.get('in_channels', 1)
 DATA_SIZES = cfg['data_sizes']
 N_RUNS = 2
 
-print(f"Dataset: {DATASET_NAME}, Image size: {IMG_SIZE}, D: {D}")
+print(f"Dataset: {DATASET_NAME}, D: {D}, Hidden dim: {HIDDEN_DIM}")
 print(f"Data sizes: {DATA_SIZES}")
 
 # ============================================================================
-# UNET MODEL (must match training script)
+# MLP MODEL (must match training script exactly)
 # ============================================================================
-class SimpleUNet(nn.Module):
-    def __init__(self, img_size, in_channels, base_ch=64):
+class MLPFlow(nn.Module):
+    def __init__(self, D=784, hidden_dim=2048):
         super().__init__()
-        self.img_size, self.in_channels = img_size, in_channels
-        ch1, ch2, ch3 = base_ch, base_ch * 2, base_ch * 4
-        
-        self.enc1 = nn.Sequential(
-            nn.Conv2d(in_channels, ch1, 3, padding=1),
-            nn.InstanceNorm2d(ch1, affine=True), nn.SiLU()
-        )
-        self.down1 = nn.Conv2d(ch1, ch1, 4, stride=2, padding=1)
-        self.enc2 = nn.Sequential(
-            nn.Conv2d(ch1, ch2, 3, padding=1),
-            nn.InstanceNorm2d(ch2, affine=True), nn.SiLU()
-        )
-        self.down2 = nn.Conv2d(ch2, ch2, 4, stride=2, padding=1)
-        
-        self.bottleneck = nn.Sequential(
-            nn.Conv2d(ch2, ch3, 3, padding=1),
-            nn.InstanceNorm2d(ch3, affine=True), nn.SiLU(),
-            nn.Conv2d(ch3, ch3, 3, padding=1),
-            nn.InstanceNorm2d(ch3, affine=True), nn.SiLU(),
-        )
-        
-        self.up1 = nn.ConvTranspose2d(ch3, ch2, 4, stride=2, padding=1)
-        self.dec1 = nn.Sequential(
-            nn.Conv2d(ch2 + ch2, ch2, 3, padding=1),
-            nn.InstanceNorm2d(ch2, affine=True), nn.SiLU()
-        )
-        self.up2 = nn.ConvTranspose2d(ch2, ch1, 4, stride=2, padding=1)
-        self.dec2 = nn.Sequential(
-            nn.Conv2d(ch1 + ch1, ch1, 3, padding=1),
-            nn.InstanceNorm2d(ch1, affine=True), nn.SiLU()
-        )
-        self.final = nn.Conv2d(ch1, in_channels, 3, padding=1)
-        
-        self.time_mlp = nn.Sequential(
-            nn.Linear(1, ch3), nn.SiLU(), nn.Linear(ch3, ch3)
+        self.D = D
+        self.net = nn.Sequential(
+            nn.Linear(D + 1, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, D)
         )
     
     def forward(self, x, t):
-        B = x.shape[0]
-        x_img = x.view(B, self.in_channels, self.img_size, self.img_size)
-        t_emb = self.time_mlp(t).unsqueeze(-1).unsqueeze(-1)
-        
-        h1 = self.enc1(x_img)
-        h1_d = self.down1(h1)
-        h2 = self.enc2(h1_d)
-        h2_d = self.down2(h2)
-        
-        h = self.bottleneck[0](h2_d)
-        h = self.bottleneck[1](h)
-        h = self.bottleneck[2](h)
-        h = h + t_emb
-        h = self.bottleneck[3](h)
-        h = self.bottleneck[4](h)
-        
-        h = self.up1(h)
-        h = torch.cat([h, h2], dim=1)
-        h = self.dec1[0](h); h = self.dec1[1](h); h = self.dec1[2](h)
-        
-        h = self.up2(h)
-        h = torch.cat([h, h1], dim=1)
-        h = self.dec2[0](h); h = self.dec2[1](h); h = self.dec2[2](h)
-        
-        out = self.final(h)
-        return out.reshape(B, -1)
+        return self.net(torch.cat([x, t], dim=1))
 
 
 # ============================================================================
 # TRANSPORT GAIN MEASUREMENT
 # ============================================================================
 def measure_transport_gain(model, device, n_samples=15, n_steps=200):
-    """Measure transport gain g(t) via isotropic finite differences."""
+    """Measure FTSS g(t) via isotropic finite differences."""
     model.eval()
     
     n_test_times = 20
@@ -137,7 +117,6 @@ def measure_transport_gain(model, device, n_samples=15, n_steps=200):
         for s in range(n_samples):
             x0 = torch.randn(1, D, device=device)
             
-            # Generate clean trajectory
             x = x0
             trajectory = [x.clone()]
             dt = 1.0 / n_steps
@@ -150,7 +129,6 @@ def measure_transport_gain(model, device, n_samples=15, n_steps=200):
                 trajectory.append(x.clone())
             x1_clean = x
             
-            # Perturb at each test time
             ratios = []
             for t_perturb in test_times:
                 step = int(t_perturb * n_steps)
@@ -174,8 +152,6 @@ def measure_transport_gain(model, device, n_samples=15, n_steps=200):
             all_ratios.append(ratios)
     
     all_ratios = np.array(all_ratios)
-    
-    # RMS averaging (consistent with g(t) definition)
     g_rms = np.sqrt(np.mean(all_ratios**2, axis=0))
     
     early = np.mean(g_rms[:5])
@@ -204,11 +180,11 @@ def main():
     
     for n in DATA_SIZES:
         print(f"\n{'='*60}")
-        print(f"Testing UNet on {DATASET_NAME} N={n}...", flush=True)
+        print(f"Testing MLP on {DATASET_NAME} N={n}...", flush=True)
         all_metrics[n] = []
         
         for run in range(N_RUNS):
-            path = f"checkpoints/unet_{DATASET_NAME}_n{n}_run{run}.pt"
+            path = f"checkpoints/mlp_{DATASET_NAME}_n{n}_run{run}.pt"
             print(f"  Looking for: {path}", flush=True)
             
             if not os.path.exists(path):
@@ -217,7 +193,14 @@ def main():
             
             ckpt = torch.load(path, map_location=device)
             
-            model = SimpleUNet(IMG_SIZE, IN_CHANNELS, base_ch=64).to(device)
+            # Read config from checkpoint
+            if 'config' in ckpt:
+                d_ckpt = ckpt['config'].get('D', D)
+                hd_ckpt = ckpt['config'].get('hidden_dim', HIDDEN_DIM)
+            else:
+                d_ckpt, hd_ckpt = D, HIDDEN_DIM
+            
+            model = MLPFlow(D=d_ckpt, hidden_dim=hd_ckpt).to(device)
             
             if isinstance(ckpt, dict) and 'model' in ckpt:
                 model.load_state_dict(ckpt['model'])
@@ -249,9 +232,7 @@ def main():
     largest_n = max(DATA_SIZES)
     baseline_min = np.mean([m['min'] for m in all_metrics[largest_n]]) if all_metrics.get(largest_n) else None
     
-    # ================================================================
-    # PLOT 1: Transport gain curves g(t) for each data size
-    # ================================================================
+    # PLOT 1: Transport gain curves
     fig, ax = plt.subplots(figsize=(8, 5))
     colors = plt.cm.viridis(np.linspace(0, 1, len(DATA_SIZES)))
     for n, color in zip(DATA_SIZES, colors):
@@ -262,18 +243,16 @@ def main():
             ax.plot(times, mean_curve, color=color, lw=2, label=f'$N={n}$')
     ax.axhline(1.0, color='gray', ls='--', lw=1.5, label='$g=1$ (identity)')
     ax.set_xlabel('Time $t$')
-    ax.set_ylabel('Transport Gain $g(t)$')
-    ax.set_title(f'Transport Gain Profiles (UNet, {DATASET_NAME})')
+    ax.set_ylabel('FTSS $g(t)$')
+    ax.set_title(f'FTSS Profiles (MLP, {DATASET_NAME})')
     ax.legend(ncol=2, framealpha=0.8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
-    plt.savefig(f'figures/unet_{DATASET_NAME}_gain_curves.png', dpi=200, bbox_inches='tight')
-    print(f"Saved figures/unet_{DATASET_NAME}_gain_curves.png")
+    plt.savefig(f'figures/mlp_{DATASET_NAME}_gain_curves.png', dpi=200, bbox_inches='tight')
+    print(f"Saved figures/mlp_{DATASET_NAME}_gain_curves.png")
     plt.close()
     
-    # ================================================================
-    # PLOT 2: Memorization score M vs data size
-    # ================================================================
+    # PLOT 2: Memorization score
     fig, ax = plt.subplots(figsize=(7, 5))
     
     if baseline_min:
@@ -293,13 +272,13 @@ def main():
     
     ax.set_xlabel('Number of Training Samples $N$')
     ax.set_ylabel('Memorization Score $M$')
-    ax.set_title(f'Memorization Score vs Data Size (UNet, {DATASET_NAME})')
+    ax.set_title(f'Memorization Score vs Data Size (MLP, {DATASET_NAME})')
     ax.set_xscale('log')
     ax.legend(framealpha=0.8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
-    plt.savefig(f'figures/unet_{DATASET_NAME}_memorization_score.png', dpi=200, bbox_inches='tight')
-    print(f"Saved figures/unet_{DATASET_NAME}_memorization_score.png")
+    plt.savefig(f'figures/mlp_{DATASET_NAME}_memorization_score.png', dpi=200, bbox_inches='tight')
+    print(f"Saved figures/mlp_{DATASET_NAME}_memorization_score.png")
     plt.close()
 
 

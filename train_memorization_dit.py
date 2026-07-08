@@ -1,5 +1,5 @@
 """
-Train UNet models at multiple data sizes to measure memorization vs transport gain.
+Train DiT models at multiple data sizes to measure memorization vs FTSS.
 Supports MNIST, CIFAR-10, CIFAR-100, and ImageNet (imagenette/tiny).
 Automatically skips training if checkpoint exists.
 """
@@ -95,10 +95,17 @@ BATCH_SIZE = 64
 LR = 5e-4
 N_RUNS = 2
 
+PATCH_SIZE = 4
+HIDDEN_DIM = 256
+NUM_HEADS = 4
+NUM_LAYERS = 4
+DROPOUT = 0.1
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device: {device}")
 print(f"Dataset: {DATASET_NAME}, Image size: {IMG_SIZE}, D: {D}")
 print(f"Data sizes: {DATA_SIZES}")
+print(f"Architecture: DiT (patch_size={PATCH_SIZE}, dim={HIDDEN_DIM}, heads={NUM_HEADS}, layers={NUM_LAYERS})")
 print(f"Steps: {STEPS}, Batch size: {BATCH_SIZE}, LR: {LR}")
 
 os.makedirs("checkpoints", exist_ok=True)
@@ -159,76 +166,139 @@ print(f"Effective data sizes: {DATA_SIZES}")
 # ============================================================================
 # MODEL
 # ============================================================================
-class SimpleUNet(nn.Module):
-    def __init__(self, img_size=28, in_channels=1, base_ch=64):
+class PatchEmbed(nn.Module):
+    def __init__(self, img_size, patch_size, in_channels, embed_dim):
         super().__init__()
-        self.img_size, self.in_channels = img_size, in_channels
-        ch1, ch2, ch3 = base_ch, base_ch * 2, base_ch * 4
+        self.img_size = img_size
+        self.patch_size = patch_size
+        self.n_patches = (img_size // patch_size) ** 2
+        self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=patch_size)
+    
+    def forward(self, x):
+        x = self.proj(x)
+        x = x.flatten(2).transpose(1, 2)
+        return x
+
+
+class SinusoidalEmbedding(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.dim = dim
+    
+    def forward(self, t):
+        if t.dim() == 1:
+            t = t.unsqueeze(-1)
+        device = t.device
+        half_dim = self.dim // 2
+        emb = math.log(10000) / (half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, device=device) * -emb)
+        emb = t * emb.unsqueeze(0)
+        emb = torch.cat([emb.sin(), emb.cos()], dim=-1)
+        return emb
+
+
+class DiTBlock(nn.Module):
+    def __init__(self, dim, num_heads, dropout=0.1):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(dim, elementwise_affine=False)
+        self.attn = nn.MultiheadAttention(dim, num_heads, dropout=dropout, batch_first=True)
+        self.norm2 = nn.LayerNorm(dim, elementwise_affine=False)
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, dim * 4),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(dim * 4, dim),
+            nn.Dropout(dropout),
+        )
+        self.adaLN = nn.Sequential(
+            nn.SiLU(),
+            nn.Linear(dim, 6 * dim),
+        )
+    
+    def forward(self, x, c):
+        shift_msa, scale_msa, gate_msa, shift_mlp, scale_mlp, gate_mlp = \
+            self.adaLN(c).chunk(6, dim=1)
         
-        self.enc1 = nn.Sequential(
-            nn.Conv2d(in_channels, ch1, 3, padding=1),
-            nn.InstanceNorm2d(ch1, affine=True), nn.SiLU()
-        )
-        self.down1 = nn.Conv2d(ch1, ch1, 4, stride=2, padding=1)
-        self.enc2 = nn.Sequential(
-            nn.Conv2d(ch1, ch2, 3, padding=1),
-            nn.InstanceNorm2d(ch2, affine=True), nn.SiLU()
-        )
-        self.down2 = nn.Conv2d(ch2, ch2, 4, stride=2, padding=1)
+        x_norm = self.norm1(x)
+        x_norm = x_norm * (1 + scale_msa.unsqueeze(1)) + shift_msa.unsqueeze(1)
+        attn_out, _ = self.attn(x_norm, x_norm, x_norm)
+        x = x + gate_msa.unsqueeze(1) * attn_out
         
-        self.bottleneck = nn.Sequential(
-            nn.Conv2d(ch2, ch3, 3, padding=1),
-            nn.InstanceNorm2d(ch3, affine=True), nn.SiLU(),
-            nn.Conv2d(ch3, ch3, 3, padding=1),
-            nn.InstanceNorm2d(ch3, affine=True), nn.SiLU(),
-        )
+        x_norm = self.norm2(x)
+        x_norm = x_norm * (1 + scale_mlp.unsqueeze(1)) + shift_mlp.unsqueeze(1)
+        x = x + gate_mlp.unsqueeze(1) * self.mlp(x_norm)
         
-        self.up1 = nn.ConvTranspose2d(ch3, ch2, 4, stride=2, padding=1)
-        self.dec1 = nn.Sequential(
-            nn.Conv2d(ch2 + ch2, ch2, 3, padding=1),
-            nn.InstanceNorm2d(ch2, affine=True), nn.SiLU()
+        return x
+
+
+class SimpleDiT(nn.Module):
+    def __init__(self, img_size=28, patch_size=4, in_channels=1, 
+                 hidden_dim=256, num_heads=4, num_layers=4, dropout=0.1):
+        super().__init__()
+        self.img_size = img_size
+        self.in_channels = in_channels
+        self.patch_size = patch_size
+        self.n_patches = (img_size // patch_size) ** 2
+        self.hidden_dim = hidden_dim
+        
+        self.patch_embed = PatchEmbed(img_size, patch_size, in_channels, hidden_dim)
+        self.pos_embed = nn.Parameter(torch.randn(1, self.n_patches, hidden_dim) * 0.02)
+        self.time_embed = nn.Sequential(
+            SinusoidalEmbedding(hidden_dim),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim),
         )
-        self.up2 = nn.ConvTranspose2d(ch2, ch1, 4, stride=2, padding=1)
-        self.dec2 = nn.Sequential(
-            nn.Conv2d(ch1 + ch1, ch1, 3, padding=1),
-            nn.InstanceNorm2d(ch1, affine=True), nn.SiLU()
-        )
-        self.final = nn.Conv2d(ch1, in_channels, 3, padding=1)
-        self.time_mlp = nn.Sequential(
-            nn.Linear(1, ch3), nn.SiLU(), nn.Linear(ch3, ch3)
-        )
+        self.blocks = nn.ModuleList([
+            DiTBlock(hidden_dim, num_heads, dropout) for _ in range(num_layers)
+        ])
+        self.final_norm = nn.LayerNorm(hidden_dim, elementwise_affine=False)
+        self.final_linear = nn.Linear(hidden_dim, patch_size * patch_size * in_channels)
     
     def forward(self, x, t):
         B = x.shape[0]
         x_img = x.view(B, self.in_channels, self.img_size, self.img_size)
-        t_emb = self.time_mlp(t).unsqueeze(-1).unsqueeze(-1)
         
-        h1 = self.enc1(x_img)
-        h1_d = self.down1(h1)
-        h2 = self.enc2(h1_d)
-        h2_d = self.down2(h2)
+        x = self.patch_embed(x_img)
+        x = x + self.pos_embed
         
-        h = self.bottleneck[0](h2_d)
-        h = self.bottleneck[1](h)
-        h = self.bottleneck[2](h)
-        h = h + t_emb
-        h = self.bottleneck[3](h)
-        h = self.bottleneck[4](h)
+        t_emb = self.time_embed(t)
         
-        h = self.up1(h)
-        h = torch.cat([h, h2], dim=1)
-        h = self.dec1[0](h); h = self.dec1[1](h); h = self.dec1[2](h)
+        for block in self.blocks:
+            x = block(x, t_emb)
         
-        h = self.up2(h)
-        h = torch.cat([h, h1], dim=1)
-        h = self.dec2[0](h); h = self.dec2[1](h); h = self.dec2[2](h)
+        x = self.final_norm(x)
+        x = self.final_linear(x)
         
-        return self.final(h).reshape(B, -1)
+        n_patches_per_side = self.img_size // self.patch_size
+        x = x.reshape(B, n_patches_per_side, n_patches_per_side, 
+                      self.patch_size, self.patch_size, self.in_channels)
+        x = x.permute(0, 5, 1, 3, 2, 4).contiguous()
+        x = x.reshape(B, self.in_channels, self.img_size, self.img_size)
+        
+        return x.reshape(B, -1)
 
 
 # ============================================================================
-# VISUALIZATION
+# DIAGNOSTIC
 # ============================================================================
+def test_model_output(model):
+    model.eval()
+    with torch.no_grad():
+        B = 4
+        x = torch.randn(B, D, device=device)
+        t = torch.rand(B, 1, device=device)
+        out = model(x, t)
+        
+        print(f"  Input shape: {x.shape}, Output shape: {out.shape}")
+        print(f"  Output range: [{out.min().item():.3f}, {out.max().item():.3f}]")
+        print(f"  Output mean: {out.mean().item():.4f}, std: {out.std().item():.4f}")
+        
+        assert out.shape == (B, D), f"Shape mismatch: expected ({B}, {D}), got {out.shape}"
+        assert out.std() > 0.01, f"Output std too small: {out.std().item():.6f}"
+        print(f"  OK: Model output test passed")
+
+
 def visualize_samples(model, save_path, n_samples=4):
     model.eval()
     fig, axes = plt.subplots(1, n_samples, figsize=(n_samples * 3, 3))
@@ -267,21 +337,25 @@ def visualize_samples(model, save_path, n_samples=4):
 # TRAINING
 # ============================================================================
 def train_with_tracking(n_samples, run_id):
-    ckpt_path = f"checkpoints/unet_{DATASET_NAME}_n{n_samples}_run{run_id}.pt"
+    ckpt_path = f"checkpoints/dit_{DATASET_NAME}_n{n_samples}_run{run_id}.pt"
     
     if os.path.exists(ckpt_path):
         print(f"  Checkpoint exists, loading: {ckpt_path}")
         ckpt = torch.load(ckpt_path, map_location=device)
-        cfg_saved = ckpt.get('config', {})
-        model = SimpleUNet(
-            img_size=cfg_saved.get('img_size', IMG_SIZE),
-            in_channels=cfg_saved.get('in_channels', IN_CHANNELS),
-            base_ch=cfg_saved.get('base_ch', 64)
+        cfg_saved = ckpt['config']
+        model = SimpleDiT(
+            img_size=cfg_saved['img_size'],
+            patch_size=cfg_saved['patch_size'],
+            in_channels=cfg_saved['in_channels'],
+            hidden_dim=cfg_saved['hidden_dim'],
+            num_heads=cfg_saved['num_heads'],
+            num_layers=cfg_saved['num_layers'],
+            dropout=cfg_saved.get('dropout', 0.1)
         ).to(device)
         model.load_state_dict(ckpt['model'])
         model.eval()
         
-        vis_path = f"figures/unet_{DATASET_NAME}_n{n_samples}_run{run_id}_samples.png"
+        vis_path = f"figures/dit_{DATASET_NAME}_n{n_samples}_run{run_id}_samples.png"
         if not os.path.exists(vis_path):
             visualize_samples(model, vis_path)
         
@@ -290,12 +364,20 @@ def train_with_tracking(n_samples, run_id):
         return model, loss_history, final_loss
     
     torch.manual_seed(SEED + run_id * 1000)
-    model = SimpleUNet(IMG_SIZE, IN_CHANNELS, base_ch=64).to(device)
+    model = SimpleDiT(
+        img_size=IMG_SIZE, patch_size=PATCH_SIZE, in_channels=IN_CHANNELS,
+        hidden_dim=HIDDEN_DIM, num_heads=NUM_HEADS, 
+        num_layers=NUM_LAYERS, dropout=DROPOUT
+    ).to(device)
     
     n_params = sum(p.numel() for p in model.parameters())
     print(f"  Model parameters: {n_params:,}")
     
-    opt = torch.optim.Adam(model.parameters(), lr=LR)
+    if run_id == 0 and n_samples == DATA_SIZES[0]:
+        print(f"  Running model diagnostic...")
+        test_model_output(model)
+    
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, STEPS)
     
     indices = random.sample(range(len(train_ds)), n_samples)
@@ -338,11 +420,11 @@ def train_with_tracking(n_samples, run_id):
     
     final_loss = loss.item()
     
-    vis_path = f"figures/unet_{DATASET_NAME}_n{n_samples}_run{run_id}_samples.png"
+    vis_path = f"figures/dit_{DATASET_NAME}_n{n_samples}_run{run_id}_samples.png"
     visualize_samples(model, vis_path)
     
     torch.save({
-        'model': model.state_dict(),
+        'model': model.state_dict(), 
         'n_samples': n_samples,
         'dataset': DATASET_NAME,
         'final_loss': final_loss,
@@ -350,8 +432,12 @@ def train_with_tracking(n_samples, run_id):
         'loss_history': loss_history,
         'config': {
             'img_size': IMG_SIZE,
+            'patch_size': PATCH_SIZE,
             'in_channels': IN_CHANNELS,
-            'base_ch': 64,
+            'hidden_dim': HIDDEN_DIM,
+            'num_heads': NUM_HEADS,
+            'num_layers': NUM_LAYERS,
+            'dropout': DROPOUT,
         }
     }, ckpt_path)
     
@@ -365,7 +451,7 @@ all_results = {}
 
 for n in DATA_SIZES:
     print(f"\n{'='*60}")
-    print(f"Training UNet on {DATASET_NAME} with N={n} samples")
+    print(f"Training DiT on {DATASET_NAME} with N={n} samples")
     print(f"{'='*60}")
     
     all_results[n] = []
@@ -382,8 +468,8 @@ for n in DATA_SIZES:
             print(f"loaded in {elapsed:.0f}s, final_loss={final_loss:.6f}", flush=True)
         
         all_results[n].append({
-            'model': model,
-            'loss_history': loss_hist,
+            'model': model, 
+            'loss_history': loss_hist, 
             'final_loss': final_loss
         })
 
@@ -405,12 +491,12 @@ for n in DATA_SIZES:
         ax.plot(all_steps[0], mean_loss, lw=2, label=f'N={n}')
 ax.set_xlabel('Training Step')
 ax.set_ylabel('MSE Loss')
-ax.set_title(f'UNet Training Loss vs Data Size ({DATASET_NAME})')
+ax.set_title(f'DiT Training Loss vs Data Size ({DATASET_NAME})')
 ax.legend(fontsize=7, ncol=2)
 ax.set_yscale('log')
 ax.grid(True, alpha=0.3)
-plt.savefig(f'figures/unet_{DATASET_NAME}_training_loss.png', dpi=150, bbox_inches='tight')
-print(f"\nSaved figures/unet_{DATASET_NAME}_training_loss.png")
+plt.savefig(f'figures/dit_{DATASET_NAME}_training_loss.png', dpi=150, bbox_inches='tight')
+print(f"\nSaved figures/dit_{DATASET_NAME}_training_loss.png")
 
 fig, ax = plt.subplots(figsize=(8, 5))
 means = []
@@ -422,18 +508,18 @@ for n in DATA_SIZES:
 ax.errorbar(DATA_SIZES, means, yerr=stds, marker='o', capsize=5, lw=2)
 ax.set_xlabel('Number of Training Samples')
 ax.set_ylabel('Final MSE Loss')
-ax.set_title(f'UNet Convergence vs Data Size ({DATASET_NAME})')
+ax.set_title(f'DiT Convergence vs Data Size ({DATASET_NAME})')
 ax.set_xscale('log')
 ax.set_yscale('log')
 ax.grid(True, alpha=0.3)
-plt.savefig(f'figures/unet_{DATASET_NAME}_final_loss_vs_size.png', dpi=150, bbox_inches='tight')
-print(f"Saved figures/unet_{DATASET_NAME}_final_loss_vs_size.png")
+plt.savefig(f'figures/dit_{DATASET_NAME}_final_loss_vs_size.png', dpi=150, bbox_inches='tight')
+print(f"Saved figures/dit_{DATASET_NAME}_final_loss_vs_size.png")
 
 # ============================================================================
 # SUMMARY
 # ============================================================================
 print(f"\n{'='*60}")
-print(f"UNet TRAINING COMPLETE - {DATASET_NAME}")
+print(f"DiT TRAINING COMPLETE - {DATASET_NAME}")
 print(f"{'='*60}")
 print(f"  {'N':>8s}  {'Final Loss':>12s}  {'Converged?':>12s}")
 print(f"  {'-'*38}")
@@ -443,6 +529,6 @@ for n in DATA_SIZES:
     converged = np.std(losses) < 0.1 * mean_l
     print(f"  {n:>8d}  {mean_l:>12.6f}  {'YES' if converged else 'MAYBE':>12s}")
 
-print(f"\nCheckpoints saved to checkpoints/unet_{DATASET_NAME}_n*_run*.pt")
-print(f"Sample images saved to figures/unet_{DATASET_NAME}_n*_run*_samples.png")
-print(f"Now run transport gain tests with: python test_unet.py --dataset {DATASET_NAME}")
+print(f"\nCheckpoints saved to checkpoints/dit_{DATASET_NAME}_n*_run*.pt")
+print(f"Sample images saved to figures/dit_{DATASET_NAME}_n*_run*_samples.png")
+print(f"Now run FTSS tests with: python test_memorization_trend_dit.py --dataset {DATASET_NAME}")

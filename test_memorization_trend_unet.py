@@ -1,5 +1,5 @@
 """
-Test transport gain for UNet-based flow matching model.
+Test FTSS for UNet-based flow matching model.
 Measures g(t) and memorization score M across data sizes.
 Supports MNIST, CIFAR-10, CIFAR-100, and ImageNet.
 """
@@ -145,7 +145,7 @@ class SimpleUNet(nn.Module):
 # TRANSPORT GAIN MEASUREMENT
 # ============================================================================
 def measure_transport_gain(model, device, n_samples=15, n_steps=200):
-    """Measure transport gain g(t) via isotropic finite differences."""
+    """Measure FTSS g(t) via isotropic finite differences."""
     model.eval()
     
     n_test_times = 20
@@ -284,8 +284,8 @@ def main():
             ax.plot(times, mean_curve, color=color, lw=2, label=f'$N={n}$')
     ax.axhline(1.0, color='gray', ls='--', lw=1.5, label='$g=1$ (identity)')
     ax.set_xlabel('Time $t$')
-    ax.set_ylabel('Transport Gain $g(t)$')
-    ax.set_title(f'Transport Gain Profiles (UNet, {DATASET_NAME})')
+    ax.set_ylabel('FTSS $g(t)$')
+    ax.set_title(f'FTSS Profiles (UNet, {DATASET_NAME})')
     ax.legend(ncol=2, framealpha=0.8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()

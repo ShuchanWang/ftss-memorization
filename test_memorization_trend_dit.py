@@ -1,5 +1,5 @@
 """
-Run contraction (transport gain) tests on all trained DiT models.
+Test FTSS for DiT-based flow matching models.
 Computes memorization score M for each data size.
 Supports MNIST, CIFAR-10, CIFAR-100, and ImageNet.
 """
@@ -212,7 +212,7 @@ class SimpleDiT(nn.Module):
 # TRANSPORT GAIN MEASUREMENT
 # ============================================================================
 def measure_transport_gain(model, device, n_samples=15, n_steps=200):
-    """Measure transport gain g(t) via isotropic finite differences."""
+    """Measure FTSS g(t) via isotropic finite differences."""
     model.eval()
 
     n_test_times = 20
@@ -362,8 +362,8 @@ def main():
             ax.plot(times, mean_curve, color=color, lw=2, label=f'$N={n}$')
     ax.axhline(1.0, color='gray', ls='--', lw=1.5, label='$g=1$ (identity)')
     ax.set_xlabel('Time $t$')
-    ax.set_ylabel('Transport Gain $g(t)$')
-    ax.set_title(f'Transport Gain Profiles (DiT, {DATASET_NAME})')
+    ax.set_ylabel('FTSS $g(t)$')
+    ax.set_title(f'FTSS Profiles (DiT, {DATASET_NAME})')
     ax.legend(ncol=2, framealpha=0.8)
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
