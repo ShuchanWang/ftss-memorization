@@ -57,7 +57,7 @@ Continuous-time generative frameworks construct probability paths between base a
 \section{Introduction}
 \label{sec:intro}
 
-Continuous-time frameworks like Flow Matching~\cite{lipmanflow} and Flow Straight and Fast~\cite{liuflow} optimize a velocity field $v_\theta(x,t)$ to construct a transport map $\phi_{0\to 1}$ intended to be diffeomorphic between two distributions. While optimal transport theory yields straight, uniform probability paths at global optimality, empirically trained neural networks exhibit non-linear trajectories influenced by model architectures and datasets. Diagnosing how these empirical vector fields evolve throughout the generative time horizon remains difficult due to a lack of scalable geometric diagnostics capable of measuring local directional sensitivity and volume deformation.
+Continuous-time frameworks like Flow Matching~\cite{lipmanflow} and Flow Straight and Fast~\cite{liuflow} optimize a velocity field $v_\theta(x,t)$ to construct a diffeomorphism between the base and target domains. While optimal transport theory yields straight-line trajectories at global optimality, empirically trained neural networks exhibit non-linear paths influenced by model architectures and datasets. Diagnosing how these empirical vector fields evolve throughout the generative time horizon remains difficult due to a lack of scalable geometric diagnostics capable of measuring local directional sensitivity and volume deformation.
 
 \subsection{The Geometrical Pathology of Memorization}
 Monitoring these internal dynamics is critical for identifying generative memorization, where high-capacity models overfit by collapsing continuous latent spaces onto discrete training samples~\cite{somepalli2023diffusion, carlini2023extracting}. Existing diagnostics are predominantly extrinsic and data-dependent, relying on post-hoc nearest-neighbor searches against the training pool or membership inference attacks \cite{shokri2017membership, feldman2020neural,zhang2017understanding}. We propose that memorization can be detected as an \emph{intrinsic} structural property of the transport map. When a model overfits, it squashes orthogonal variations to force trajectories onto a subset of learned targets, altering the underlying spectral properties of the flow. Detecting this structural collapse removes the need for training data access during auditing.
@@ -78,7 +78,7 @@ Geometric Metric & Exact Formulation & Computational Cost & Mode of Evaluation \
 Full Spatial Jacobian & $J_\theta = \nabla_x v_\theta \in \mathbb{R}^{d \times d}$ & $O(d \cdot \text{Cost}(v_\theta))$ & Dense Backpropagation \\
 Vector-Jacobian Product & $v^\top J_\theta \in \mathbb{R}^d$ & $O(1 \cdot \text{Cost}(v_\theta))$ & Single Backward Pass \\
 Exact Spectrum ($\sigma_i$) & $\text{SVD}(\Phi(1,t))$ & $O(d^3 + d \cdot \text{Cost}(\phi))$ & Prohibitive at Scale \\
-\textbf{FTSS (Ours)} & $\hat{g}(t)$ & $O(M \cdot \text{Cost}(\phi))$ & \textbf{Gradient-Free Forward Pass} \\
+\textbf{FTSS (Ours)} & $\hat{g}(t)$ & $O(K \cdot T \cdot \text{Cost}(\phi))$ & \textbf{Gradient-Free Forward Pass} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -89,14 +89,14 @@ To circumvent this scalability constraint, we introduce the \emph{Finite-Time Sp
 The primary contributions of this work are as follows:
 
 \begin{itemize}
-    \item \textbf{Mathematical Properties of FTSS:} We formalize the FTSS $g(t)$ in Definition~\ref{def:ftss}. Proposition~\ref{prop:rms} establishes its direct equivalence to the root-mean-square (RMS) singular value of the state-transition matrix, validating it as a continuous proxy for stable rank in Remark~\ref{rm:srank}. Using the arithmetic-geometric mean inequality, we bound the absolute Jacobian determinant pointwisely in Proposition~\ref{prop:detbound}, which directly enables the proof of an explicit upper bound on the differential entropy of the generated target distribution in Proposition~\ref{prop:entropy_bound}.
+    \item \textbf{Mathematical Properties of FTSS:} We formalize the FTSS $g(t)$ in Definition~\ref{def:ftss}. Proposition~\ref{prop:rms} establishes its direct equivalence to the root-mean-square (RMS) singular value of the state-transition matrix, validating it as a continuous proxy for stable rank in Remark~\ref{rm:srank}. Using the arithmetic-geometric mean inequality, we bound the absolute Jacobian determinant pointwise in Proposition~\ref{prop:detbound}, which directly enables the proof of an explicit upper bound on the differential entropy of the generated target distribution in Proposition~\ref{prop:entropy_bound}.
     \item \textbf{Empirical Characterization of Spectral Collapse and Memorization:} Section~\ref{sec:bottleneck_dynamics} demonstrates experimentally that spectral collapse consistently occurs during the late stages of trajectory generation in low-data regimes. Based on this phenomenon, we introduce and validate an empirical Spectral Collapse Ratio $M$. In Section~\ref{sec:diagnostic}, empirical results across multiple architectures demonstrate that $M$ accurately identifies overfitted continuous-time models without requiring training pool access or baseline data comparisons.
 \end{itemize}
 
 \section{Finite-Time Spectral Sensitivity}
 \label{sec:gain}
 
-To quantify the dimensional pinching that characterizes memorization, we introduce FTSS, denoted $g(t)$. This metric adapts the core philosophy of Finite-Time Lyapunov Exponents---tracking perturbation growth over finite time horizons---but aggregates across the full singular value spectrum rather than isolating only the dominant mode. By measuring the root-mean-square variational deformation of the tangent space, FTSS provides a scalar summary of how severely the flow compresses or expands volume across all directions simultaneously.
+To quantify the dimensional pinching that characterizes memorization, we now formalize the FTSS, denoted $g(t)$. This metric adapts the core philosophy of Finite-Time Lyapunov Exponents---tracking perturbation growth over finite time horizons---but aggregates across the full singular value spectrum rather than isolating only the dominant mode. By measuring the root-mean-square variational deformation of the tangent space, FTSS provides a scalar summary of how severely the flow compresses or expands volume across all directions simultaneously.
 
 This section formalizes the FTSS as an intrinsic geometric observable for continuous-time generative models. We establish its foundation via the linearized variational equations of the vector field and provide its interpretation in terms of the spectrum of the forward state-transition matrix. We then characterize its relationship with volume forms and a differential entropy bound. Finally, we present a computationally efficient, gradient-free Monte Carlo estimator for this quantity requiring only forward-pass execution.
 
@@ -135,13 +135,13 @@ By substituting the variational expansion~\eqref{eq:var} into Definition~\ref{de
 
 We now show that this directional expectation captures the spectral magnitude of the underlying transport operator.
 
-\begin{proposition}[RMS Singular-Value Interpretation]
+\begin{proposition}[RMS Singular Value Interpretation]
 \label{prop:rms}
 Let $\sigma_1(t; x_t) \ge \sigma_2(t; x_t) \ge \dots \ge \sigma_d(t; x_t) \ge 0$ be the singular values of the forward state-transition matrix $\Phi(1,t; x_t)$. Then the FTSS satisfies:
 \begin{equation}
 g(t) = \frac{1}{\sqrt{d}}\;\mathbb{E}_{x_t}\Bigl[\|\Phi(1,t; x_t)\|_F\Bigr],
 \end{equation}
-and its squared expectation yields the expected mean-square singular value:
+and its square yields the expected mean-square singular value:
 \begin{equation}
 g(t)^2 = \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \sigma_i^2(t; x_t)\right].
 \end{equation}
@@ -181,7 +181,7 @@ g(t) = \sqrt{\frac{1}{2}(\sigma_1^2 + \sigma_2^2)} = \sqrt{\frac{1}{2}(10^{-4} +
 This additive aggregation scales heavily based on the dominant deformation axis, ensuring that the local dimensional collapse is not obscured by the outlying expansion.
 \end{example}
 
-This behavior highlights a deeper theoretical link: the local singular value spectrum provides strict analytical control over instantaneous volume deformation. Specifically, via the arithmetic-geometric mean inequality, the absolute Jacobian determinant is pointwisely bounded above by the local RMS singular value raised to the dimensional power.
+This behavior highlights a deeper theoretical link: the local singular value spectrum provides strict analytical control over instantaneous volume deformation. Specifically, via the arithmetic-geometric mean inequality, the absolute Jacobian determinant is pointwise bounded above by the local RMS singular value raised to the dimensional power.
 
 Consequently, when this local RMS value is below unity, it serves as a tighter, more conservative indicator of a contractive regime than the volume form alone. While a single principal axis can technically still stretch up to $\sqrt{d}$ times the local RMS value, the quadratic scaling strictly caps this potential growth, preventing the unconstrained singular value explosions that typically mask dimensional collapse in the standard determinant. 
 
@@ -207,7 +207,7 @@ This pointwise structural coupling allows us to globally bound the differential 
 
 \begin{proposition}[Entropy-Compression Bound]
 \label{prop:entropy_bound}
-Let $\phi_{0\to 1}: \mathbb{R}^d \to \mathbb{R}^d$ be a smooth, diffeomorphic transport map pushing forward the base latent distribution $X \sim p_0$ to the model data distribution $Y \sim p_1$. The differential entropy $h(Y)$ satisfies the upper bound:
+Let $\phi_{0\to 1}: \mathbb{R}^d \to \mathbb{R}^d$ be a smooth, diffeomorphic transport map pushing forward the base latent distribution $X \sim p_0$ to the target distribution $Y \sim p_1$. The differential entropy $h(Y)$ satisfies the upper bound:
 \begin{equation}
 h(Y) \le h(X) + d \log g(0).
 \end{equation}
@@ -241,20 +241,23 @@ The entropy compression bound established in Proposition~\ref{prop:entropy_bound
 \subsection{Algorithmic Implementation}
 \label{sec:estimation}
 
-Evaluating the state-transition matrix $\Phi(1,t; x_t)$ directly via automatic differentiation requires $d$ backward passes to construct a dense Jacobian matrix, which is computationally prohibitive for high-dimensional models. To bypass this, we directly instantiate Definition~\ref{def:ftss} using a parallelized, gradient-free Monte Carlo estimator based on directional finite differences. As detailed in Algorithm~\ref{alg:gain}, we approximate the global FTSS by injecting isotropic perturbations $\varepsilon U$ into cached intermediate states, mapping them to the target terminal space via forward-pass trajectory simulations, and computing the RMS gain. 
+Evaluating the state-transition matrix $\Phi(1,t; x_t)$ directly via automatic differentiation requires $d$ backward passes to construct a dense Jacobian matrix, which is computationally prohibitive for high-dimensional models. To bypass this, we directly instantiate Definition~\ref{def:ftss} using a parallelized, gradient-free Monte Carlo estimator based on directional finite differences. As detailed in Algorithm~\ref{alg:gain}, we approximate the global FTSS by injecting isotropic perturbations $\varepsilon U$ into cached intermediate states, mapping them to the target terminal space via forward-pass trajectory simulations, and computing the RMS gain. The estimator involves two approximations: a finite step size $\varepsilon$ for the directional derivative, and a finite number of trajectories $K$ for the expectation over $x_t$. As $\varepsilon \to 0$ and $K \to \infty$, the estimator is consistent and converges to the true FTSS $g(t)$.
 
 \begin{algorithm}[htbp]
 \caption{Parallel Gradient-Free Estimation of FTSS}
 \label{alg:gain}
 \begin{algorithmic}[1]
-\Require Velocity field $v_\theta$, initial states $X_0 \in \mathbb{R}^{K \times d}$, grid $\{t_j\}_{j=1}^T$, step $\varepsilon$, sample count $M$.
+\Require Velocity field $v_\theta$, initial states $X_0 \in \mathbb{R}^{K \times d}$, grid $\{t_j\}_{j=1}^T$, step $\varepsilon$.
 \Ensure Empirical FTSS values $\{\hat{g}(t_j)\}_{j=1}^T$.
 \State Compute $X_1 = \phi_{0 \to 1}(X_0)$ and cache intermediate states $\{X_{t_j}\}_{j=1}^T$
 \For{$j = 1$ \textbf{to} $T$}
-    \State Sample $U \in \mathbb{R}^{K \times M \times d}$, where $U_{k,m,:} \sim \mathrm{Unif}(S^{d-1})$
-    \State Perturb states: $X_{t_j}' = \text{Repeat}(X_{t_j}, M) + \varepsilon U$
-    \State Map to target: $X_1' = \phi_{t_j \to 1}(X_{t_j}')$
-    \State $\hat{g}(t_j) = \left( \frac{1}{K M \varepsilon^2} \sum_{k=1}^K \sum_{m=1}^M \|X_{1, (k,m)}' - X_{1, k}\|^2 \right)^{1/2}$
+    \For{$k = 1$ \textbf{to} $K$}
+        \State Sample $u \sim \mathrm{Unif}(S^{d-1})$
+        \State $\delta = \varepsilon \cdot u$
+        \State $X_1' = \phi_{t_j \to 1}(X_{t_j}^{(k)} + \delta)$
+        \State $r_{k,j} = \|X_1' - X_1^{(k)}\| / \varepsilon$
+    \EndFor
+    \State $\hat{g}(t_j) = \left( \frac{1}{K} \sum_{k=1}^K r_{k,j}^2 \right)^{1/2}$
 \EndFor
 \State \Return $\{\hat{g}(t_j)\}_{j=1}^{T}$
 \end{algorithmic}
@@ -263,7 +266,7 @@ Evaluating the state-transition matrix $\Phi(1,t; x_t)$ directly via automatic d
 \section{Auditing Memorization via Spectral Sensitivity}
 \label{sec:bottleneck_framework}
 
-We analyze how generative velocity fields behave across different training data sizes, model architectures, and datasets. Our main finding is that the Spectral Collapse Ratio, $M := g_{\min} / g_{\min}^{\text{full}}$ where $g_{\min} := \min_{t \in [0,1]} g(t)$, characterizes whether a continuous-time model memorizes or generalizes. Here, $g_{\min}^{\text{full}}$ represents the reference baseline minimum of a healthy model trained on the full dataset.
+We analyze how generative velocity fields behave across different training data sizes, model architectures, and datasets. Our main finding is that the Spectral Collapse Ratio $M := g_{\min} / g_{\min}^{\text{full}}$, where $g_{\min} := \min_{t \in [0,1]} g(t)$, characterizes whether a continuous-time model memorizes or generalizes. Here, $g_{\min}^{\text{full}}$ represents the reference baseline minimum of a healthy model trained on the full dataset.
 
 The memorization experiment is designed around data scarcity. Data scarcity drives this geometric change by altering the nature of the learned target distribution. In the low-data regime where the model memorizes a small pool of $N$ training samples, the target distribution turns into a set of isolated, discrete points. To reach these sparse points, the velocity field pinches the high-dimensional flow of paths into a lower dimension. This loss of trajectory volume causes the FTSS to drop at the bottleneck, making $g_{\min}$ a direct indicator of memorization.
 
@@ -272,7 +275,7 @@ The memorization experiment is designed around data scarcity. Data scarcity driv
 
 To see how $g(t)$ behaves in real models, we plot FTSS curves across different training data sizes, model architectures, and datasets (see Figure~\ref{fig:crossmethod} in Appendix~\ref{app:implementation}). We observe two distinct phases during the trajectory:
 \begin{itemize}
-    \item \textbf{Early Stage ($t \to 0$):} The early stage varies across architectures and datasets. The FTSS can go above 1 ($g(t) > 1$) because the model pushes paths outward to match the scale and variance of the target data.
+    \item \textbf{Early Stage ($t \to 0$):} The early stage varies across architectures and datasets. The FTSS can go above 1 ($g(t) > 1$) because the model pushes paths outward to match the scale of the target data.
     \item \textbf{Late Stage ($t \to 1$):} The paths shrink ($g(t) < 1$) as they come close to their target.
 \end{itemize}
 
@@ -310,7 +313,7 @@ We formalize this process in Algorithm~\ref{alg:memorization} as an internal geo
 
 \section{Discussion and Conclusions}
 \label{sec:discussion_conclusion}
-In this paper, we introduced the FTSS $g(t)$, a scalable, gradient-free geometric metric that measures the average directional sensitivity and volume deformation of continuous-time generative flows. We established that low-data regimes trigger a severe spectral collapse, manifesting as a sharp drop in the bottleneck minimum $g_{\min}$. Utilizing this signature, we developed an internal auditing framework based on the empirical Spectral Collapse Ratio $M = g_{\min} / g_{\min}^{\text{full}}$. This framework successfully detects overfitted continuous-time models directly from their internal flow dynamics, completely eliminating the need for post-hoc data comparisons, trajectory logging, or training pool access.
+In this paper, we introduced the FTSS $g(t)$, a scalable, gradient-free geometric metric that measures the average directional sensitivity and volume deformation of continuous-time generative flows. We established that low-data regimes trigger a severe spectral collapse, manifesting as a sharp drop in the bottleneck minimum $g_{\min}$. Utilizing this signature, we developed an internal auditing framework based on the empirical Spectral Collapse Ratio $M = g_{\min} / g_{\min}^{\text{full}}$. This framework successfully detects overfitted continuous-time models directly from their internal flow dynamics, completely eliminating the need for post-hoc data comparisons or training pool access.
 
 Our findings demonstrate that generative memorization is fundamentally an \emph{intrinsic geometric pathology} rather than a purely statistical phenomenon. When constrained by data scarcity, continuous-time velocity fields compress trajectory volume by pinching high-dimensional flows toward isolated, discrete target points. Crucially, because the FTSS $g(t)$ tracks the RMS singular value of the forward state-transition matrix, it exposes this structural contraction as a severe rank collapse at a localized temporal bottleneck ($g_{\min}$). The monotonic relationship between the Spectral Collapse Ratio $M$ and the training sample size $N$ confirms that this dimensional collapse is an invariant signature of data scarcity. From a practical perspective, our parallelized, gradient-free Monte Carlo estimator circumvents the prohibitive $O(d)$ computational bottleneck associated with explicit spatial Jacobian extraction, shifting the operational cost to efficient forward-pass finite differences.
 
@@ -354,7 +357,7 @@ This appendix provides the complete empirical characterization of our geometric 
     \hfill
     \begin{minipage}[b]{0.47\textwidth}\quad\end{minipage} % Invisible spacer to perfectly balance the 9th image
     
-    \caption{FTSS across model architectures and datasets.}
+    \caption{FTSS curves across model architectures and datasets.}
     \label{fig:crossmethod}
 \end{figure}
 
@@ -414,11 +417,15 @@ For ImageNet-scale experiments, we use the imagenette subset (10-class) due to c
 
 \subsection{Data Size Sweep}
 
-To study memorization, we train models on subsets of each dataset at sizes
+To study memorization, we train models on subsets of varying size from each dataset. For MNIST, CIFAR-10, and CIFAR-100, we sweep over
 \begin{equation}
-N \in \{50, 100, 200, 500, 1000, 2000, 5000, N_{\text{full}}\},
+N \in \{50, 100, 200, 500, 1000, 2000, 5000, 12000\},
 \end{equation}
-where $N_{\text{full}} = 12,\!000$ for MNIST, CIFAR-10, and CIFAR-100. For imagenette, $N_{\text{full}} = 5,\!000$ due to the smaller total dataset size ($9,\!469$ samples). At each data size, $N_R = 2$ independent training runs are performed with different random seeds (seed $= 42 + 1000 \times \text{run\_id}$) to estimate variance.
+where the largest configuration ($N = 12,\!000$) serves as our reference baseline. For imagenette, we sweep over
+\begin{equation}
+N \in \{50, 100, 200, 500, 1000, 2000, 5000\},
+\end{equation}
+with the largest subset capped at $5,\!000$ samples (the full imagenette dataset contains $9,\!469$ samples). At each data size, two independent training runs are performed with different random seeds ($\text{seed} = 42 + 1000 \times \text{run\_id}$) to estimate variance. The baseline minimum $g_{\min}^{\text{full}}$ used in the Spectral Collapse Ratio is computed from the model trained on the largest subset for each dataset (12,000 for MNIST/CIFAR-10/CIFAR-100; 5,000 for imagenette).
 
 \subsection{Architectures}
 
@@ -500,59 +507,114 @@ The FTSS $g(t)$ is estimated via Algorithm~\ref{alg:gain} in the main text. We u
 \section{Relation to Finite-Time Lyapunov Exponents}
 \label{app:lyapunov}
 
-The FTSS $g(t)$ and finite-time Lyapunov exponents (FTLEs) both characterize the singular-value spectrum of the state-transition matrix $\Phi(1,t)$, but they measure fundamentally different aspects of its geometry. This appendix clarifies the mathematical distinction.
+The FTSS $g(t)$ and finite-time Lyapunov exponents (FTLEs) both characterize 
+the singular-value spectrum of the state-transition matrix $\Phi(1,t)$, but 
+they measure fundamentally different aspects of its geometry. This appendix 
+clarifies the mathematical distinction.
 
-\subsection{Worst-Case Instability vs. Average Sensitivity}
+\subsection{Worst-Case Instability vs.\ Average Sensitivity}
 
-For a dynamical system governed by $\dot{x} = v(x,t)$, the FTLE over the interval $[t,1]$ along a specific perturbation direction $u$ is traditionally defined as~\cite{shadden2005definition}:
+For a fixed initial condition $x_t$ and perturbation direction $u$, the 
+FTLE over the interval $[t,1]$ is~\cite{shadden2005definition}:
 \begin{equation}
 \lambda(t, u; x_t) = \frac{1}{1-t}\log\frac{\|\Phi(1,t;x_t)\,u\|}{\|u\|}.
 \end{equation}
-In chaotic dynamics and turbulent mixing applications, analysis typically focuses on the dominant FTLE, defined by the spectral norm of the operator~\cite{haller2015lagrangian}:
+It measures the exponential separation rate for a single trajectory $x_t$ and 
+a single direction $u$. Maximizing over directions yields the dominant FTLE 
+for that trajectory:
 \begin{equation}
-\lambda_{\max}(t) = \frac{1}{1-t}\log\sigma_{\max}\bigl(\Phi(1,t)\bigr).
+\lambda_{\max}(t; x_t) = \frac{1}{1-t}\log\sigma_{\max}\bigl(\Phi(1,t;x_t)\bigr),
 \end{equation}
-The dominant FTLE isolates the single most unstable perturbation direction for a given trajectory. In contrast, as established in Proposition~\ref{prop:rms}, the FTSS aggregates across the entire spectrum \emph{and} across the trajectory distribution:
+where $\sigma_{\max}$ is the largest singular value of the state-transition 
+matrix. The dominant FTLE is widely used in chaotic dynamics and turbulent 
+mixing to identify the most unstable direction at each point in state 
+space~\cite{haller2015lagrangian}.
+
+Averaging $\lambda(t,u;x_t)$ over isotropic directions $u \sim \mathrm{Unif}(S^{d-1})$ 
+and trajectories $x_t$ gives a mean FTLE:
 \begin{equation}
-g(t)^2 = \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \sigma_i^2(t; x_t)\right].
+\bar{\lambda}(t) = \mathbb{E}_{x_t}\!\left[\mathbb{E}_{u}\bigl[\lambda(t,u;x_t)\bigr]\right]
+= \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \frac{\log\sigma_i(t;x_t)}{1-t}\right].
 \end{equation}
 
-A key structural difference is that FTLEs are computed per-trajectory before any averaging, while $g(t)$ takes the expectation over $x_t$ \emph{inside} the squared sum. This means the log and expectation do not commute:
+In contrast, the FTSS from Proposition~\ref{prop:rms} aggregates differently:
 \begin{equation}
--\log g(t) = -\frac{1}{2}\log\left(\frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \sigma_i^2(t; x_t)\right]\right) \neq \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} -\log\sigma_i(t; x_t)\right].
+g(t)^2 = \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \sigma_i^2(t;x_t)\right].
 \end{equation}
-The left-hand side is a summary of the collective spectral mass after aggregation; the right-hand side is the mean log-singular-value, a direct analogue of an average FTLE over all directions and trajectories. The non-commutation of the log and the expectation means these two quantities are, in general, numerically different.
+The key structural difference is the order of operations: the mean FTLE takes 
+the logarithm before averaging over directions and trajectories, while the 
+FTSS averages the squared singular values first. Consequently, the log and 
+expectation do not commute:
+\begin{equation}
+-\log g(t) \neq (1-t)\,\bar{\lambda}(t).
+\end{equation}
+The left-hand side summarizes collective spectral mass after aggregation; the 
+right-hand side averages directional growth rates. The two quantities are 
+numerically distinct and sensitive to different aspects of the transport 
+geometry.
 
 \subsection{Illustrative Example}
 
-Consider a generative flow where, at some time $t$, half of the trajectories follow an anisotropic transport operator $\Phi_A$ and the other half follow $\Phi_B$, defined as:
+The distinction between the mean FTLE and the FTSS is not merely formal; it 
+has quantitative consequences. Consider a generative flow where, at some time 
+$t$, half of the trajectories encounter an anisotropic transport operator 
+$\Phi_A$ and the other half encounter $\Phi_B$, defined as:
 \begin{equation}
 \Phi_A = \operatorname{diag}(10,\,1,\,1,\,\ldots,\,1), \qquad
 \Phi_B = \operatorname{diag}(10,\,0.1,\,0.1,\,\ldots,\,0.1),
 \end{equation}
-in a high-dimensional space ($d \gg 1$). Both operators share the same dominant singular value $\sigma_{\max}=10$, so the dominant FTLE is identical for all trajectories:
+in a high-dimensional space ($d \gg 1$). Both operators share the same 
+dominant singular value $\sigma_{\max}=10$, so the dominant FTLE is identical 
+for all trajectories:
 \begin{equation}
 \lambda_{\max} = \frac{1}{1-t}\log 10.
 \end{equation}
 
-Now compare the two aggregate summaries. The per-trajectory mean log-singular-value (the right-hand side of the inequality above) for a $\Phi_A$ trajectory is approximately $0$, and for a $\Phi_B$ trajectory it is approximately $\log 0.1 \approx -2.30$. Averaging over the two trajectory types gives:
+Now compare the two aggregate summaries. The mean FTLE $\bar{\lambda}(t)$, 
+which averages $\log\sigma_i$ over directions and trajectories, gives:
 \begin{equation}
-\frac{1}{d}\;\mathbb{E}\!\left[\sum_{i=1}^{d} -\log\sigma_i\right] \approx \frac{1}{2}(0 + 2.30) = 1.15.
+(1-t)\,\bar{\lambda}(t) 
+= \frac{1}{d}\;\mathbb{E}_{x_t}\!\left[\sum_{i=1}^{d} \log\sigma_i\right]
+\approx \frac{1}{2}\cdot\frac{\log 10 + (d-1)\log 1}{d} 
+     + \frac{1}{2}\cdot\frac{\log 10 + (d-1)\log 0.1}{d}.
 \end{equation}
+For large $d$, the $d-1$ contracting directions in $\Phi_B$ dominate. 
+Specifically, $\log 1 = 0$, so the $\Phi_A$ term becomes $\frac{1}{2}\cdot\frac{\log 10}{d} \approx 0$, 
+and the $\Phi_B$ term becomes $\frac{1}{2}\cdot\frac{\log 10 + (d-1)\log 0.1}{d} \approx \frac{1}{2}\log 0.1 \approx -1.15$.
+Thus $(1-t)\,\bar{\lambda}(t) \approx -1.15$, indicating strong average contraction 
+on the logarithmic scale.
 
-The FTSS first computes the mean squared singular value under the expectation:
+In contrast, the FTSS first computes the mean squared singular value under 
+the expectation:
 \begin{equation}
-g(t)^2 = \frac{1}{2}\cdot\frac{100 + (d-1)\cdot 1}{d} \;+\; \frac{1}{2}\cdot\frac{100 + (d-1)\cdot 0.01}{d}.
+g(t)^2 = \frac{1}{2}\cdot\frac{100 + (d-1)\cdot 1}{d} 
+      + \frac{1}{2}\cdot\frac{100 + (d-1)\cdot 0.01}{d}.
 \end{equation}
 For large $d$, $g_A^2 \approx 1$ and $g_B^2 \approx 0.01$, so
 \begin{equation}
-g(t)^2 \approx \frac{1}{2}(1 + 0.01) = 0.505, \qquad g(t) \approx 0.71, \qquad -\log g(t) \approx 0.34.
+g(t)^2 \approx \frac{1}{2}(1 + 0.01) = 0.505, \qquad 
+g(t) \approx 0.71, \qquad 
+-\log g(t) \approx 0.34.
 \end{equation}
 
-Thus, for the same ensemble of trajectories, the mean log-singular-value reports a compression of roughly $1.15$ (on the logarithmic scale), while the corresponding logarithmic FTSS value $-\log g(t)$ reports $0.34$.
+The two summaries paint different pictures. The mean FTLE is dominated by the 
+many strongly contracting directions in $\Phi_B$, reporting substantial 
+compression. The FTSS, by squaring the singular values before averaging, 
+gives more weight to the single amplified direction ($\sigma=10$) and reports 
+only mild overall attenuation ($g \approx 0.71$, close to the identity value 
+of $1.0$). Neither summary is more correct; they measure different aspects of 
+the transport geometry.
 
 \subsection{Computational Considerations}
 
-Isolating $\lambda_{\max}(t)$ requires iterative tracking of the dominant singular value, typically demanding power iteration, tangent-space integration, or repetitive Jacobian-vector products across specialized trajectories~\cite{benettin1980lyapunov}. Computing the full mean log-singular-value would similarly require explicit spectral decomposition. By contrast, the FTSS requires no explicit derivative extraction or matrix factorization. As formalized in Algorithm~\ref{alg:gain}, it is computed directly through forward-pass integration of isotropic finite differences, offering a different computational profile.
+Isolating $\lambda_{\max}(t)$ requires iterative tracking of the dominant 
+singular value, typically demanding power iteration, tangent-space 
+integration, or repetitive Jacobian-vector products across specialized 
+trajectories~\cite{benettin1980lyapunov}. Computing the full mean 
+log-singular-value would similarly require explicit spectral decomposition. 
+By contrast, the FTSS requires no explicit derivative extraction or matrix 
+factorization. As formalized in Algorithm~\ref{alg:gain}, it is computed 
+directly through forward-pass integration of isotropic finite differences, 
+offering a different computational method.
 
 \end{document}

@@ -1,6 +1,6 @@
 """
 Test FTSS for UNet-based flow matching model.
-Measures g(t) and memorization score M across data sizes.
+Measures g(t) and Spectral Collapse Ratio M across data sizes.
 Supports MNIST, CIFAR-10, CIFAR-100, and ImageNet.
 """
 
@@ -142,9 +142,9 @@ class SimpleUNet(nn.Module):
 
 
 # ============================================================================
-# TRANSPORT GAIN MEASUREMENT
+# FTSS ESTIMATION
 # ============================================================================
-def measure_transport_gain(model, device, n_samples=15, n_steps=200):
+def estimate_ftss(model, device, n_samples=15, n_steps=200):
     """Measure FTSS g(t) via isotropic finite differences."""
     model.eval()
     
@@ -252,7 +252,7 @@ def main():
             model.eval()
             
             print(f"  Run {run+1}/{N_RUNS}...", end=" ", flush=True)
-            metrics = measure_transport_gain(model, device, n_samples=15)
+            metrics = estimate_ftss(model, device, n_samples=15)
             all_metrics[n].append(metrics)
             
             print(f"early={metrics['early']:.3f}, late={metrics['late']:.3f}, "
@@ -273,7 +273,7 @@ def main():
     largest_n = max(DATA_SIZES)
     baseline_min = np.mean([m['min'] for m in all_metrics[largest_n]]) if all_metrics.get(largest_n) else None
     
-    # PLOT 1: Transport gain curves
+    # PLOT 1: FTSS curves
     fig, ax = plt.subplots(figsize=(8, 5))
     colors = plt.cm.viridis(np.linspace(0, 1, len(DATA_SIZES)))
     for n, color in zip(DATA_SIZES, colors):
@@ -293,7 +293,7 @@ def main():
     print(f"Saved figures/unet_{DATASET_NAME}_gain_curves.png")
     plt.close()
     
-    # PLOT 2: Memorization score
+    # PLOT 2: Spectral Collapse Ratio
     fig, ax = plt.subplots(figsize=(7, 5))
     
     if baseline_min:
@@ -312,8 +312,8 @@ def main():
                    label=f'Baseline ($N={largest_n}$)')
     
     ax.set_xlabel('Number of Training Samples $N$')
-    ax.set_ylabel('Memorization Score $M$')
-    ax.set_title(f'Memorization Score vs Data Size (UNet, {DATASET_NAME})')
+    ax.set_ylabel('Spectral Collapse Ratio $M$')
+    ax.set_title(f'Spectral Collapse Ratio vs Data Size (UNet, {DATASET_NAME})')
     ax.set_xscale('log')
     ax.legend(framealpha=0.8)
     ax.grid(True, alpha=0.3)

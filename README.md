@@ -10,13 +10,13 @@ This repository studies memorization in continuous-time generative models throug
 - `train_memorization_mlp.py`: Train MLP flow matching models across dataset sizes.
 - `train_memorization_unet.py`: Train UNet flow matching models across dataset sizes.
 - `train_memorization_dit.py`: Train DiT flow matching models across dataset sizes.
-- `test_memorization_trend_mlp.py`: Estimate FTSS curves and memorization scores for MLP checkpoints.
-- `test_memorization_trend_unet.py`: Estimate FTSS curves and memorization scores for UNet checkpoints.
-- `test_memorization_trend_dit.py`: Estimate FTSS curves and memorization scores for DiT checkpoints.
+- `test_memorization_trend_mlp.py`: Estimate FTSS curves and Spectral Collapse Ratios for MLP checkpoints.
+- `test_memorization_trend_unet.py`: Estimate FTSS curves and Spectral Collapse Ratios for UNet checkpoints.
+- `test_memorization_trend_dit.py`: Estimate FTSS curves and Spectral Collapse Ratios for DiT checkpoints.
 
 ## Method
 
-The paper introduces FTSS, denoted `g(t)`, as a forward-pass finite-difference estimator of the RMS singular value of the state-transition matrix from time `t` to the terminal time. The scalar memorization statistic is the **Spectral Collapse Ratio**
+The paper introduces FTSS, denoted `g(t)`, as a forward-pass finite-difference estimator of the RMS singular value of the state-transition matrix from time `t` to the terminal time. The scalar diagnostic statistic is the **Spectral Collapse Ratio**
 
 ```text
 M = g_min / g_min_full
