@@ -51,7 +51,7 @@ The Geometry of Memorization: Finite-Time Spectral Sensitivity as a Diagnostic f
 
 % ================================================================
 \begin{abstract}
-Continuous-time generative frameworks construct probability paths between base and target domains by optimizing time-dependent velocity fields. While theoretical targets favor straight trajectories, empirical networks develop complex path deformations. This paper presents the \emph{Finite-Time Spectral Sensitivity (FTSS)} $g(t)$, a gradient-free, forward-pass metric that exposes flow geometry by tracking the root-mean-square singular value of the state-transition matrix. Serving as a continuous proxy for stable rank, $g(t)$ reveals a distinct geometric pathology under data scarcity: while generalizing models maintain stable effective dimensions, overfitting causes a severe spectral collapse. We leverage this structural phenomenon to develop an internal geometric audit based on $g(t)$. Our framework detects generative memorization using purely internal trajectory dynamics, removing the need for external membership queries or baseline data comparison.
+Continuous-time generative frameworks construct probability paths between base and target domains by optimizing time-dependent velocity fields. While theoretical targets favor straight trajectories, empirical networks develop complex path deformations. This paper presents the \emph{Finite-Time Spectral Sensitivity (FTSS)} $g(t)$, a gradient-free, forward-pass metric that exposes flow geometry by tracking the root-mean-square singular value of the state-transition matrix. Serving as a continuous proxy for stable rank, $g(t)$ reveals a distinct geometric pathology under data scarcity: while generalizing models maintain stable effective dimensions, overfitting causes a spectral collapse. We leverage this structural phenomenon to develop an internal geometric audit based on $g(t)$. Our framework detects generative memorization using purely internal trajectory dynamics, removing the need for external membership queries or baseline data comparison.
 \end{abstract}
 
 \section{Introduction}
@@ -96,7 +96,14 @@ The primary contributions of this work are as follows:
 \section{Finite-Time Spectral Sensitivity}
 \label{sec:gain}
 
-To quantify the dimensional pinching that characterizes memorization, we now formalize the FTSS, denoted $g(t)$. This metric adapts the core philosophy of Finite-Time Lyapunov Exponents---tracking perturbation growth over finite time horizons---but aggregates across the full singular value spectrum rather than isolating only the dominant mode. By measuring the root-mean-square variational deformation of the tangent space, FTSS provides a scalar summary of how severely the flow compresses or expands volume across all directions simultaneously.
+To quantify the dimensional pinching that characterizes memorization, we now 
+formalize the FTSS, denoted $g(t)$. This metric adapts the core philosophy of 
+Finite-Time Lyapunov Exponents---tracking perturbation growth over finite time 
+horizons---but aggregates across the full singular value spectrum rather than 
+isolating only the dominant mode (see Appendix~\ref{app:lyapunov} for a 
+detailed comparison). By measuring the root-mean-square variational deformation 
+of the tangent space, FTSS provides a scalar summary of how severely the flow 
+compresses or expands volume across all directions simultaneously.
 
 This section formalizes the FTSS as an intrinsic geometric observable for continuous-time generative models. We establish its foundation via the linearized variational equations of the vector field and provide its interpretation in terms of the spectrum of the forward state-transition matrix. We then characterize its relationship with volume forms and a differential entropy bound. Finally, we present a computationally efficient, gradient-free Monte Carlo estimator for this quantity requiring only forward-pass execution.
 
