@@ -26,6 +26,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='mnist',
                     choices=['mnist', 'cifar10', 'cifar100'],
                     help='Dataset to train on')
+parser.add_argument('--sizes', type=int, nargs='+',
+                    help='Train only these subset sizes (default: full sweep)')
+parser.add_argument('--runs', type=int, default=2,
+                    help='Number of independent runs (default: 2)')
 args = parser.parse_args()
 
 DATASET_NAME = args.dataset
@@ -71,6 +75,10 @@ IN_CHANNELS = cfg['in_channels']
 IMG_SIZE = cfg['img_size']
 D = cfg['D']
 DATA_SIZES = cfg['data_sizes']
+if args.sizes is not None:
+    if any(n not in DATA_SIZES for n in args.sizes):
+        parser.error(f'--sizes must be chosen from {DATA_SIZES}')
+    DATA_SIZES = sorted(set(args.sizes))
 STEPS = cfg['steps']
 LR = cfg['lr']
 
@@ -84,7 +92,9 @@ torch.manual_seed(SEED)
 
 BATCH_SIZE = 64
 HIDDEN_DIM = 2048  # Larger hidden dim for image data
-N_RUNS = 2
+N_RUNS = args.runs
+if N_RUNS < 1:
+    parser.error('--runs must be positive')
 EMA_DECAY = 0.999
 USE_AMP = True
 

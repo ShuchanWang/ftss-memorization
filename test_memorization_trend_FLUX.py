@@ -209,7 +209,7 @@ def measure_ftss(n_samples, n_times, n_steps, delta_scale, n_pert):
         all_ratios.append(ratios)
     
     all_ratios = np.array(all_ratios)
-    g_t = all_ratios.mean(axis=0)
+    g_t = np.sqrt(np.mean(all_ratios**2, axis=0))
     return test_times, g_t, all_ratios
 
 
