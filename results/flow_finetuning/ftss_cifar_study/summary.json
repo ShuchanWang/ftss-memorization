@@ -1,0 +1,515 @@
+{
+  "changes": [
+    {
+      "seed": 0,
+      "size": 50,
+      "step": 300,
+      "ftss_ratio": 0.9429044611280148,
+      "contraction": 0.05879031523734663,
+      "training_preference_change": 0.03200000000000003,
+      "training_anchor_advantage_change": 0.009432628188616156,
+      "loss_gap_change": 0.01129576563835144,
+      "membership_auc_change": 0.06279999999999997,
+      "coverage_change": 0.038000000000000034,
+      "precision_change": -0.010000000000000009,
+      "style_diversity_ratio_change": 0.000846105813980147,
+      "pixel_training_preference_change": 0.05399999999999994
+    },
+    {
+      "seed": 0,
+      "size": 50,
+      "step": 1000,
+      "ftss_ratio": 0.623737888699991,
+      "contraction": 0.47202504901876136,
+      "training_preference_change": 0.122,
+      "training_anchor_advantage_change": 0.046253234710630975,
+      "loss_gap_change": 0.09632104635238647,
+      "membership_auc_change": 0.40800000000000003,
+      "coverage_change": -0.020999999999999963,
+      "precision_change": -0.08199999999999996,
+      "style_diversity_ratio_change": -0.02600264549255371,
+      "pixel_training_preference_change": 0.29999999999999993
+    },
+    {
+      "seed": 0,
+      "size": 50,
+      "step": 3000,
+      "ftss_ratio": 0.20524319960611317,
+      "contraction": 1.5835596634464106,
+      "training_preference_change": 0.404,
+      "training_anchor_advantage_change": 1.1970262883334917,
+      "loss_gap_change": 0.5244987457990646,
+      "membership_auc_change": 0.5516,
+      "coverage_change": 0.02400000000000002,
+      "precision_change": 0.0020000000000000018,
+      "style_diversity_ratio_change": -0.06585021018981929,
+      "pixel_training_preference_change": 0.486
+    },
+    {
+      "seed": 0,
+      "size": 200,
+      "step": 300,
+      "ftss_ratio": 1.0021344873460674,
+      "contraction": -0.0021322125643721385,
+      "training_preference_change": 0.010000000000000009,
+      "training_anchor_advantage_change": 0.004128461981600573,
+      "loss_gap_change": 0.0030223429203033447,
+      "membership_auc_change": 0.01132500000000003,
+      "coverage_change": 0.020000000000000018,
+      "precision_change": -0.01200000000000001,
+      "style_diversity_ratio_change": 0.005700683593749978,
+      "pixel_training_preference_change": 0.020000000000000018
+    },
+    {
+      "seed": 0,
+      "size": 200,
+      "step": 1000,
+      "ftss_ratio": 0.9766494382193748,
+      "contraction": 0.02362750584314297,
+      "training_preference_change": 0.05600000000000005,
+      "training_anchor_advantage_change": 0.010125907090610736,
+      "loss_gap_change": 0.017177551984786987,
+      "membership_auc_change": 0.06622499999999998,
+      "coverage_change": 0.04200000000000004,
+      "precision_change": -0.010000000000000009,
+      "style_diversity_ratio_change": 0.031695383787155196,
+      "pixel_training_preference_change": 0.08199999999999996
+    },
+    {
+      "seed": 0,
+      "size": 200,
+      "step": 3000,
+      "ftss_ratio": 0.5840752275459757,
+      "contraction": 0.5377254901587041,
+      "training_preference_change": 0.124,
+      "training_anchor_advantage_change": 0.050971805161344044,
+      "loss_gap_change": 0.1861868053674698,
+      "membership_auc_change": 0.439175,
+      "coverage_change": 0.07400000000000001,
+      "precision_change": -0.06799999999999995,
+      "style_diversity_ratio_change": 0.054950433969497725,
+      "pixel_training_preference_change": 0.406
+    },
+    {
+      "seed": 0,
+      "size": 1000,
+      "step": 300,
+      "ftss_ratio": 0.9989612981697129,
+      "contraction": 0.0010392416548767804,
+      "training_preference_change": 0.04599999999999993,
+      "training_anchor_advantage_change": 0.00602911373452176,
+      "loss_gap_change": 0.0005477666854858398,
+      "membership_auc_change": 0.0026689999999999214,
+      "coverage_change": 0.029000000000000026,
+      "precision_change": -0.0020000000000000018,
+      "style_diversity_ratio_change": 0.0037199139595032182,
+      "pixel_training_preference_change": 0.006000000000000005
+    },
+    {
+      "seed": 0,
+      "size": 1000,
+      "step": 1000,
+      "ftss_ratio": 1.0108195668047324,
+      "contraction": -0.010761454085671664,
+      "training_preference_change": 0.025999999999999912,
+      "training_anchor_advantage_change": -0.0001136466842297651,
+      "loss_gap_change": 0.0023183673620224,
+      "membership_auc_change": 0.011205999999999938,
+      "coverage_change": 0.03400000000000003,
+      "precision_change": -0.010000000000000009,
+      "style_diversity_ratio_change": 0.02116780281066899,
+      "pixel_training_preference_change": 0.01200000000000001
+    },
+    {
+      "seed": 0,
+      "size": 1000,
+      "step": 3000,
+      "ftss_ratio": 1.003926183513689,
+      "contraction": -0.003918496169909464,
+      "training_preference_change": 0.051999999999999935,
+      "training_anchor_advantage_change": 0.0034180345175814867,
+      "loss_gap_change": 0.007840365171432495,
+      "membership_auc_change": 0.038713999999999915,
+      "coverage_change": 0.05199999999999999,
+      "precision_change": -0.01200000000000001,
+      "style_diversity_ratio_change": 0.046027302742004395,
+      "pixel_training_preference_change": 0.061999999999999944
+    },
+    {
+      "seed": 1,
+      "size": 50,
+      "step": 300,
+      "ftss_ratio": 0.9642464235500707,
+      "contraction": 0.03640839094908834,
+      "training_preference_change": 0.0020000000000000018,
+      "training_anchor_advantage_change": 0.005187196233914369,
+      "loss_gap_change": 0.009766712784767151,
+      "membership_auc_change": 0.041200000000000014,
+      "coverage_change": 0.02899999999999997,
+      "precision_change": 0.01200000000000001,
+      "style_diversity_ratio_change": 0.008356308937072732,
+      "pixel_training_preference_change": 0.04400000000000004
+    },
+    {
+      "seed": 1,
+      "size": 50,
+      "step": 1000,
+      "ftss_ratio": 0.6444272138344931,
+      "contraction": 0.4393933972946626,
+      "training_preference_change": 0.10400000000000004,
+      "training_anchor_advantage_change": 0.042142600360156976,
+      "loss_gap_change": 0.0943453311920166,
+      "membership_auc_change": 0.3388,
+      "coverage_change": -0.007000000000000006,
+      "precision_change": -0.04800000000000004,
+      "style_diversity_ratio_change": -0.0035653471946716087,
+      "pixel_training_preference_change": 0.254
+    },
+    {
+      "seed": 1,
+      "size": 50,
+      "step": 3000,
+      "ftss_ratio": 0.22618847017728053,
+      "contraction": 1.4863866884061179,
+      "training_preference_change": 0.5720000000000001,
+      "training_anchor_advantage_change": 1.1546505257390924,
+      "loss_gap_change": 0.5070493072271347,
+      "membership_auc_change": 0.484,
+      "coverage_change": 0.05499999999999999,
+      "precision_change": 0.02200000000000002,
+      "style_diversity_ratio_change": -0.09114850163459776,
+      "pixel_training_preference_change": 0.406
+    },
+    {
+      "seed": 1,
+      "size": 200,
+      "step": 300,
+      "ftss_ratio": 1.008678153951712,
+      "contraction": -0.0086407152171892,
+      "training_preference_change": 0.03199999999999997,
+      "training_anchor_advantage_change": 0.007759472543698579,
+      "loss_gap_change": 0.0031421631574630737,
+      "membership_auc_change": 0.015125,
+      "coverage_change": 0.007000000000000006,
+      "precision_change": 0.02200000000000002,
+      "style_diversity_ratio_change": 0.003424805402755804,
+      "pixel_training_preference_change": 0.016000000000000014
+    },
+    {
+      "seed": 1,
+      "size": 200,
+      "step": 1000,
+      "ftss_ratio": 0.9854731060490463,
+      "contraction": 0.01463344241262313,
+      "training_preference_change": 0.11200000000000004,
+      "training_anchor_advantage_change": 0.02169930257365964,
+      "loss_gap_change": 0.017934650182724,
+      "membership_auc_change": 0.09097499999999997,
+      "coverage_change": 0.04299999999999998,
+      "precision_change": 0.018000000000000016,
+      "style_diversity_ratio_change": 0.02996636629104621,
+      "pixel_training_preference_change": 0.10799999999999998
+    },
+    {
+      "seed": 1,
+      "size": 200,
+      "step": 3000,
+      "ftss_ratio": 0.5394159881616565,
+      "contraction": 0.617268228074966,
+      "training_preference_change": 0.198,
+      "training_anchor_advantage_change": 0.06997875932885897,
+      "loss_gap_change": 0.2029583901166916,
+      "membership_auc_change": 0.47645,
+      "coverage_change": 0.059,
+      "precision_change": -0.028000000000000025,
+      "style_diversity_ratio_change": 0.06317715048789985,
+      "pixel_training_preference_change": 0.45200000000000007
+    },
+    {
+      "seed": 1,
+      "size": 1000,
+      "step": 300,
+      "ftss_ratio": 1.0117553944505508,
+      "contraction": -0.01168683656150267,
+      "training_preference_change": 0.01200000000000001,
+      "training_anchor_advantage_change": 0.0036696324485530362,
+      "loss_gap_change": 0.0005210936069488525,
+      "membership_auc_change": 0.0026249999999999885,
+      "coverage_change": 0.01100000000000001,
+      "precision_change": 0.028000000000000025,
+      "style_diversity_ratio_change": 0.0012394011020661067,
+      "pixel_training_preference_change": 0.005999999999999894
+    },
+    {
+      "seed": 1,
+      "size": 1000,
+      "step": 1000,
+      "ftss_ratio": 1.0338609367405764,
+      "contraction": -0.033300276461855106,
+      "training_preference_change": -0.0040000000000000036,
+      "training_anchor_advantage_change": 0.006593218403850743,
+      "loss_gap_change": 0.002289101481437683,
+      "membership_auc_change": 0.011136999999999952,
+      "coverage_change": 0.01100000000000001,
+      "precision_change": 0.038000000000000034,
+      "style_diversity_ratio_change": 0.015568363666534468,
+      "pixel_training_preference_change": 0.019999999999999907
+    },
+    {
+      "seed": 1,
+      "size": 1000,
+      "step": 3000,
+      "ftss_ratio": 1.0291085479573818,
+      "contraction": -0.028692940071046166,
+      "training_preference_change": 0.030000000000000027,
+      "training_anchor_advantage_change": 0.012871952463971412,
+      "loss_gap_change": 0.007623329758644104,
+      "membership_auc_change": 0.037474999999999925,
+      "coverage_change": 0.04299999999999998,
+      "precision_change": 0.010000000000000009,
+      "style_diversity_ratio_change": 0.05805557370185854,
+      "pixel_training_preference_change": 0.0119999999999999
+    },
+    {
+      "seed": 2,
+      "size": 50,
+      "step": 300,
+      "ftss_ratio": 0.9422471984002078,
+      "contraction": 0.05948762014766194,
+      "training_preference_change": 0.0040000000000000036,
+      "training_anchor_advantage_change": 0.00900019946655762,
+      "loss_gap_change": 0.010853752493858337,
+      "membership_auc_change": 0.06680000000000008,
+      "coverage_change": 0.024999999999999967,
+      "precision_change": -0.03200000000000003,
+      "style_diversity_ratio_change": 0.0003011047840117964,
+      "pixel_training_preference_change": 0.09599999999999997
+    },
+    {
+      "seed": 2,
+      "size": 50,
+      "step": 1000,
+      "ftss_ratio": 0.6425938877307765,
+      "contraction": 0.4422423441246755,
+      "training_preference_change": 0.132,
+      "training_anchor_advantage_change": 0.05925557755194563,
+      "loss_gap_change": 0.09310774505138397,
+      "membership_auc_change": 0.36640000000000006,
+      "coverage_change": 0.03999999999999998,
+      "precision_change": -0.08999999999999997,
+      "style_diversity_ratio_change": -0.001020598411560103,
+      "pixel_training_preference_change": 0.406
+    },
+    {
+      "seed": 2,
+      "size": 50,
+      "step": 3000,
+      "ftss_ratio": 0.23072253186497735,
+      "contraction": 1.4665394511897942,
+      "training_preference_change": 0.38,
+      "training_anchor_advantage_change": 1.1263748325040248,
+      "loss_gap_change": 0.46513840556144714,
+      "membership_auc_change": 0.48640000000000005,
+      "coverage_change": 0.05499999999999999,
+      "precision_change": 0.04200000000000004,
+      "style_diversity_ratio_change": -0.12099963426589966,
+      "pixel_training_preference_change": 0.528
+    },
+    {
+      "seed": 2,
+      "size": 200,
+      "step": 300,
+      "ftss_ratio": 0.9948371135199546,
+      "contraction": 0.005176260229741923,
+      "training_preference_change": 0.020000000000000018,
+      "training_anchor_advantage_change": 0.006297798328514521,
+      "loss_gap_change": 0.003001302480697632,
+      "membership_auc_change": 0.012700000000000045,
+      "coverage_change": 0.021999999999999964,
+      "precision_change": -0.02400000000000002,
+      "style_diversity_ratio_change": 0.0038343608379364236,
+      "pixel_training_preference_change": 0.006000000000000005
+    },
+    {
+      "seed": 2,
+      "size": 200,
+      "step": 1000,
+      "ftss_ratio": 0.9372219258263665,
+      "contraction": 0.06483517758762065,
+      "training_preference_change": 0.016000000000000014,
+      "training_anchor_advantage_change": 0.013034441090762773,
+      "loss_gap_change": 0.018669769167900085,
+      "membership_auc_change": 0.08372500000000005,
+      "coverage_change": 0.056999999999999995,
+      "precision_change": 0.0,
+      "style_diversity_ratio_change": 0.007123112678527832,
+      "pixel_training_preference_change": 0.10599999999999998
+    },
+    {
+      "seed": 2,
+      "size": 200,
+      "step": 3000,
+      "ftss_ratio": 0.5275162172738553,
+      "contraction": 0.6395756704573726,
+      "training_preference_change": 0.05999999999999994,
+      "training_anchor_advantage_change": 0.04344933533362917,
+      "loss_gap_change": 0.20638954639434814,
+      "membership_auc_change": 0.4666,
+      "coverage_change": 0.09499999999999997,
+      "precision_change": -0.03600000000000003,
+      "style_diversity_ratio_change": 0.02453491687774656,
+      "pixel_training_preference_change": 0.45199999999999996
+    },
+    {
+      "seed": 2,
+      "size": 1000,
+      "step": 300,
+      "ftss_ratio": 1.0077146776782964,
+      "contraction": -0.007685071721906878,
+      "training_preference_change": 0.01200000000000001,
+      "training_anchor_advantage_change": 0.002500884201663488,
+      "loss_gap_change": 0.0005418360233306885,
+      "membership_auc_change": 0.0023459999999999592,
+      "coverage_change": 0.006000000000000005,
+      "precision_change": -0.006000000000000005,
+      "style_diversity_ratio_change": 0.005430346727371194,
+      "pixel_training_preference_change": -0.020000000000000018
+    },
+    {
+      "seed": 2,
+      "size": 1000,
+      "step": 1000,
+      "ftss_ratio": 1.0142784477417275,
+      "contraction": -0.014177470767996594,
+      "training_preference_change": 0.014000000000000012,
+      "training_anchor_advantage_change": 0.0052229192907889445,
+      "loss_gap_change": 0.002305924892425537,
+      "membership_auc_change": 0.01066900000000004,
+      "coverage_change": 0.030999999999999972,
+      "precision_change": -0.038000000000000034,
+      "style_diversity_ratio_change": 0.010915887355804399,
+      "pixel_training_preference_change": 0.01200000000000001
+    },
+    {
+      "seed": 2,
+      "size": 1000,
+      "step": 3000,
+      "ftss_ratio": 0.9958226175280388,
+      "contraction": 0.004186132109676702,
+      "training_preference_change": 0.06799999999999995,
+      "training_anchor_advantage_change": 0.012470207411144539,
+      "loss_gap_change": 0.008173227310180664,
+      "membership_auc_change": 0.03865300000000005,
+      "coverage_change": 0.068,
+      "precision_change": 0.010000000000000009,
+      "style_diversity_ratio_change": 0.02119054198265069,
+      "pixel_training_preference_change": 0.05400000000000005
+    }
+  ],
+  "associations": {
+    "training_preference": {
+      "pooled": 0.725690742693907,
+      "by_step": {
+        "300": -0.18410202992625907,
+        "1000": 0.8166666666666667,
+        "3000": 0.8833333333333333
+      },
+      "by_size": {
+        "50": 0.9500000000000001,
+        "200": 0.6166666666666666,
+        "1000": 0.7196715715299219
+      }
+    },
+    "training_anchor_advantage": {
+      "pooled": 0.818070818070818,
+      "by_step": {
+        "300": 0.65,
+        "1000": 0.8666666666666667,
+        "3000": 0.9
+      },
+      "by_size": {
+        "50": 0.9666666666666667,
+        "200": 0.8499999999999999,
+        "1000": -0.18333333333333335
+      }
+    },
+    "loss_gap": {
+      "pooled": 0.9261294261294261,
+      "by_step": {
+        "300": 0.7666666666666667,
+        "1000": 0.9666666666666667,
+        "3000": 1.0
+      },
+      "by_size": {
+        "50": 0.9666666666666667,
+        "200": 0.9166666666666666,
+        "1000": 0.25
+      }
+    },
+    "membership_auc": {
+      "pooled": 0.9218559218559219,
+      "by_step": {
+        "300": 0.7833333333333333,
+        "1000": 0.9333333333333332,
+        "3000": 0.9500000000000001
+      },
+      "by_size": {
+        "50": 0.9833333333333333,
+        "200": 0.8833333333333333,
+        "1000": 0.15
+      }
+    },
+    "coverage": {
+      "pooled": 0.3655520310247332,
+      "by_step": {
+        "300": 0.7666666666666667,
+        "1000": -0.11666666666666665,
+        "3000": -0.05857791861290061
+      },
+      "by_size": {
+        "50": 0.12552411131335847,
+        "200": 0.9666666666666667,
+        "1000": 0.35983578576496095
+      }
+    },
+    "precision": {
+      "pooled": -0.25668463878561704,
+      "by_step": {
+        "300": -0.6833333333333333,
+        "1000": -0.7196715715299219,
+        "3000": 0.2008385781013735
+      },
+      "by_size": {
+        "50": 0.2333333333333333,
+        "200": -0.6833333333333333,
+        "1000": -0.2761530448893886
+      }
+    },
+    "style_diversity_ratio": {
+      "pooled": -0.3663003663003663,
+      "by_step": {
+        "300": -0.19999999999999998,
+        "1000": -0.6666666666666667,
+        "3000": -0.6666666666666667
+      },
+      "by_size": {
+        "50": -0.9166666666666666,
+        "200": 0.7333333333333334,
+        "1000": -0.049999999999999996
+      }
+    },
+    "pixel_training_preference": {
+      "pooled": 0.884815525976238,
+      "by_step": {
+        "300": 0.7782494901428225,
+        "1000": 0.8786687791935092,
+        "3000": 0.803354312405494
+      },
+      "by_size": {
+        "50": 0.9121418755437382,
+        "200": 0.8833333333333333,
+        "1000": 0.11715583722580122
+      }
+    }
+  }
+}

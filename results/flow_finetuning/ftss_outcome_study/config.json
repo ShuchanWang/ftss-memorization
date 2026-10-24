@@ -1,0 +1,52 @@
+{
+  "arguments": {
+    "source": "table_runs/ftss_mlp_matched",
+    "output": "table_runs/ftss_outcome_study",
+    "repo": "<external>/ftss-memorization",
+    "classifier": "table_runs/generative_generalization/feature_evaluator.pt",
+    "sizes": [
+      50,
+      200,
+      1000
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "bases": [
+      0,
+      1
+    ],
+    "steps": 3000,
+    "check_steps": [
+      1000,
+      3000
+    ],
+    "samples": 1000,
+    "probes": 15,
+    "ode_steps": 200,
+    "device": "cuda"
+  },
+  "sources": {
+    "run_ftss_outcome_study.py": "83e7aac6fb34518e06b821b342eb2ef920c8673a51f0113532ff1203f10a10dc",
+    "ftss_batched.py": "ebac5406cfc63e8ca5c169230718452d33f0ddd20db780676c0f286a2f6c2c7b",
+    "run_matched_ftss_mlp.py": "908753e0faea5b7675264df3db2fa1f749c5b6cd87f8131f363bbdb926938741",
+    "evaluate_generative_generalization.py": "8a5837b4a4ff01fe2ec42ed632695cd9887191ad171e0ad358bf9ece9faa3418",
+    "<external>/train_memorization_mlp.py": "690f50599e659e08a6a1849a7b3562940030c595910102665bf6a41307443072",
+    "<external>/finetune_memorization_ftss.py": "b667aabfebdaf46931c1d5955f1b2a83cc8137c8f5640bcf5a3088808f238e9c",
+    "table_runs/generative_generalization/feature_evaluator.pt": "8d042e77d4eac765bcc28d15ff563a86affa86137ca2785c54b246525194a8d9",
+    "table_runs/ftss_mlp_matched/reproduction/checkpoints/mlp_mnist_n12000_run0.pt": "ab13adfbb423af0b88ec9519a48ebd63b182d1fc6552c459eea4dae2c18f363d",
+    "table_runs/ftss_mlp_matched/reproduction/checkpoints/mlp_mnist_n12000_run1.pt": "841e9c0e2f255955d5d5904380ad8694c2540d35f9680949d36e714ee45af24f"
+  },
+  "plan": "Saved clean bases x subset seeds x nested sizes; paired EMA evaluations",
+  "prespecified_outcomes": [
+    "training_preference",
+    "loss_gap",
+    "membership_auc",
+    "coverage",
+    "precision",
+    "style_diversity_ratio",
+    "effective_digit_modes"
+  ]
+}

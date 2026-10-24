@@ -57,3 +57,34 @@ pip install -r requirements.txt
 ```
 
 The scripts write checkpoints to `checkpoints/` and figures to `figures/`.
+
+## Pretrained Fine-Tuning Studies
+
+The FTSS follow-up code formerly in the watermark repository now lives in
+`studies/flow_finetuning/`, with its tests beside the runners. The original
+training and FTSS implementations above are unchanged.
+
+```bash
+python run_study.py --list
+python run_study.py run_ftss_cifar_study.py --help
+python run_study.py test
+python export_study_summaries.py
+```
+
+Install `requirements-finetuning.txt` for these studies. They reuse model
+loaders and existing public clean checkpoints from the sibling
+`flow-matching-dynamics-watermarking` checkout. Set `WATERMARK_REPO` when that
+checkout is elsewhere. No private watermark key is required by the clean studies.
+
+New FTSS outputs default to this repository's `table_runs/`; datasets and
+public base checkpoints are still resolved in the watermark checkout. The
+launcher sets that working directory explicitly for legacy relative paths.
+On the current machine, old FTSS artifact paths are compatibility symlinks
+to the moved files. These local symlinks and full checkpoints are not synced.
+
+`results/flow_finetuning/` contains compact, source-fingerprinted evidence,
+including negative results. Full local logs, images and checkpoints remain in
+`table_runs/`, which is ignored by Git. Saved manifests retain their historical
+paths and hashes: source relocation does not authorize overwriting a frozen
+experiment configuration. Use a new output directory when a runner rejects
+an old source fingerprint.

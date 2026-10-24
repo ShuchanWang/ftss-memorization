@@ -1,0 +1,59 @@
+{
+  "output": "table_runs/unmarked_memorization_multimodel",
+  "ftss_repo": "../ftss-memorization",
+  "models": [
+    "mlp",
+    "unet"
+  ],
+  "sizes": [
+    10,
+    50,
+    1000,
+    4000
+  ],
+  "steps": [
+    0,
+    300,
+    1000,
+    3000
+  ],
+  "runs": 3,
+  "lr": 0.0003,
+  "batch_size": 32,
+  "eval_batch": 64,
+  "n_generated": 256,
+  "n_probes": 15,
+  "time_points": 20,
+  "ode_steps": 200,
+  "epsilon_scale": 0.1,
+  "loss_repeats": 4,
+  "seed": 42,
+  "device": "cuda",
+  "checkpoints": {
+    "mlp": {
+      "path": "table_runs/main_architectures/mlp/orthogonal5/clean_model_0.pt",
+      "sha256": "6208439a3deb12fa04c90cd91c2d48c21108d4fb4599b6a701bf6094ead5d6ad"
+    },
+    "unet": {
+      "path": "table_runs/checkpoints/classic_unet_mnist/clean_mnist.pt",
+      "sha256": "43d3508d90806ff77a0cbc01e1fe0edec8c176f0a097af22cb09ec4df5a5168c"
+    }
+  },
+  "ftss_source_sha256": "b667aabfebdaf46931c1d5955f1b2a83cc8137c8f5640bcf5a3088808f238e9c",
+  "model_source_sha256": {
+    "mlp": "96957258b01f7e22f8f864d2519d9d12da5def14c51b335f8ced8f76753e42a1",
+    "unet": "e44df526ad7888ab954ab9e508ae9d92ddc1902efa593a997e20d85865a0a53f"
+  },
+  "unwatermarked_only": true,
+  "dataset": "MNIST test split, excluded from base training",
+  "calibration_images": 800,
+  "pools": "Disjoint, equal tuned/reference sizes, balanced digits",
+  "metrics": {
+    "raw_copy": "Original FTSS repo copying rule at 1% and 5% calibration quantiles",
+    "visible_copy": "Same rule after clipping generated pixels to [-1,1]",
+    "neighbor_preference": "Generated sample closer to tuned than equal-size reference pool",
+    "membership": "AUROC using negative MC flow loss, plus calibrated TPR/FPR",
+    "loss_gap": "Reference mean flow loss minus tuned mean flow loss"
+  },
+  "ftss_protocol": "Upstream finite differences with velocity [-10,10], states [-5,5]"
+}

@@ -1,0 +1,356 @@
+{
+  "state": "complete",
+  "rule": {
+    "threshold": 0.482009615962896,
+    "calibration_balanced_accuracy": 1.0,
+    "confusion": {
+      "tp": 6,
+      "fn": 0,
+      "fp": 0,
+      "tn": 6,
+      "sensitivity": 1.0,
+      "false_alarm_rate": 0.0,
+      "specificity": 1.0
+    },
+    "decision": "Flag if paired FTSS minimum ratio <= threshold; threshold constrained to [0,1]",
+    "selection": "Maximize calibration balanced accuracy; ties favor lower false alarms, then smaller threshold",
+    "copy_rmse": 0.05,
+    "positive_copy_excess": 0.01,
+    "calibration": [
+      {
+        "run": 0,
+        "size": 10,
+        "ftss_ratio": 0.15813088590219102,
+        "copy_rate": 0.953125,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.953125,
+        "copy_count": 244,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "5a5f6a6715a06e901b53ceaca9321400709a4b723f92eded6f58473971da152d"
+      },
+      {
+        "run": 0,
+        "size": 50,
+        "ftss_ratio": 0.37920190835275785,
+        "copy_rate": 0.42578125,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.42578125,
+        "copy_count": 109,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "9346410eff78bb810b29e3d070815d150b78c6defdb7a7406b90a87a33663c1d"
+      },
+      {
+        "run": 0,
+        "size": 1000,
+        "ftss_ratio": 0.9566114553879586,
+        "copy_rate": 0.0,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.0,
+        "copy_count": 0,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "979aa687e2c3255eb2623c13a9968e75f2a42e0f34b23790ad51c315f8723974"
+      },
+      {
+        "run": 0,
+        "size": 4000,
+        "ftss_ratio": 1.0415994286687253,
+        "copy_rate": 0.0,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.0,
+        "copy_count": 0,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "0a379eac51552f92395bf99e7f3f74aa172380151c4d8ccbb45089a4ce4b65b4"
+      },
+      {
+        "run": 1,
+        "size": 10,
+        "ftss_ratio": 0.17474269003574971,
+        "copy_rate": 0.94140625,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.94140625,
+        "copy_count": 241,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "0daba514addce05580b8cf71d2af48ef05a7b339c46c91df4e95782f9ef58e6f"
+      },
+      {
+        "run": 1,
+        "size": 50,
+        "ftss_ratio": 0.482009615962896,
+        "copy_rate": 0.44921875,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.44921875,
+        "copy_count": 115,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "1ac0bc79426041782c5d23b4b90a2cfd6675451b94bc6324bb1cbcbe2b86ca41"
+      },
+      {
+        "run": 1,
+        "size": 1000,
+        "ftss_ratio": 1.0527708015689328,
+        "copy_rate": 0.0,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.0,
+        "copy_count": 0,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "718f50a2b0fb30725751eb52fd675e10c9d1efcb62e0d7ca962f71988b8226e5"
+      },
+      {
+        "run": 1,
+        "size": 4000,
+        "ftss_ratio": 1.1282183144202178,
+        "copy_rate": 0.00390625,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.00390625,
+        "copy_count": 1,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "b9b3ba83d3e0158a7050469f38348b0cb2ff8e43cb907389fe90796ef027f54c"
+      },
+      {
+        "run": 2,
+        "size": 10,
+        "ftss_ratio": 0.19512664004979247,
+        "copy_rate": 0.95703125,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.95703125,
+        "copy_count": 245,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "595a36fa5320c96cc5d9a86f97cae3d389532a2dd61213f51a5ea52b6cb02f3b"
+      },
+      {
+        "run": 2,
+        "size": 50,
+        "ftss_ratio": 0.4264507612980714,
+        "copy_rate": 0.49609375,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.49609375,
+        "copy_count": 127,
+        "reference_copy_count": 0,
+        "positive": true,
+        "checkpoint_sha256": "7803aeb5b0239af0415d74f0eb148cd699a9467a2d7e6fe01f2fe51d212721d7"
+      },
+      {
+        "run": 2,
+        "size": 1000,
+        "ftss_ratio": 0.9915566661635427,
+        "copy_rate": 0.0,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.0,
+        "copy_count": 0,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "15ec9b9a588ab11f1315b5dbe2526b6d24ef1af85caaec27631a8be8389f085e"
+      },
+      {
+        "run": 2,
+        "size": 4000,
+        "ftss_ratio": 1.0597637828785864,
+        "copy_rate": 0.0,
+        "reference_copy_rate": 0.0,
+        "copy_excess": 0.0,
+        "copy_count": 0,
+        "reference_copy_count": 0,
+        "positive": false,
+        "checkpoint_sha256": "8a164090047ace192531b5aff0ae7bf8cee6410389d77fc6743cfe5984544b2b"
+      }
+    ],
+    "provenance": "Retrospective calibration on previously inspected UNet runs; freeze before new validation outcomes",
+    "source_sha256": "db66c5d8e16ef1add0d7bc8c2d60585392a1c62e7b80795badabf063d13fc36b"
+  },
+  "metrics": {
+    "mlp": {
+      "all": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 9,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 9,
+        "seed_blocks": 3
+      },
+      "uniform": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 3,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      },
+      "repeat": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 3,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      },
+      "specialize": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 3,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      }
+    },
+    "unet": {
+      "all": {
+        "tp": 0,
+        "fn": 4,
+        "fp": 0,
+        "tn": 5,
+        "sensitivity": 0.0,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 9,
+        "seed_blocks": 3
+      },
+      "uniform": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 3,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      },
+      "repeat": {
+        "tp": 0,
+        "fn": 3,
+        "fp": 0,
+        "tn": 0,
+        "sensitivity": 0.0,
+        "false_alarm_rate": null,
+        "specificity": null,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      },
+      "specialize": {
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 2,
+        "sensitivity": 0.0,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 3,
+        "seed_blocks": 3
+      }
+    }
+  },
+  "secondary_all_checkpoints": {
+    "mlp": {
+      "all": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 18,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 18,
+        "seed_blocks": 3
+      },
+      "uniform": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 6,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      },
+      "repeat": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 6,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      },
+      "specialize": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 6,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      }
+    },
+    "unet": {
+      "all": {
+        "tp": 0,
+        "fn": 7,
+        "fp": 0,
+        "tn": 11,
+        "sensitivity": 0.0,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 18,
+        "seed_blocks": 3
+      },
+      "uniform": {
+        "tp": 0,
+        "fn": 0,
+        "fp": 0,
+        "tn": 6,
+        "sensitivity": null,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      },
+      "repeat": {
+        "tp": 0,
+        "fn": 6,
+        "fp": 0,
+        "tn": 0,
+        "sensitivity": 0.0,
+        "false_alarm_rate": null,
+        "specificity": null,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      },
+      "specialize": {
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 5,
+        "sensitivity": 0.0,
+        "false_alarm_rate": 0.0,
+        "specificity": 1.0,
+        "checkpoints": 6,
+        "seed_blocks": 3
+      }
+    }
+  }
+}

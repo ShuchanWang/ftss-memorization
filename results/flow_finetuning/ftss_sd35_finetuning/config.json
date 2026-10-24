@@ -1,0 +1,39 @@
+{
+  "output": "table_runs/ftss_sd35_finetuning",
+  "model": "stabilityai/stable-diffusion-3.5-medium",
+  "sizes": [
+    10,
+    200
+  ],
+  "seeds": [
+    24101,
+    24102,
+    24103
+  ],
+  "steps": [
+    100,
+    300,
+    1000
+  ],
+  "resolution": 256,
+  "lr": 5e-05,
+  "rank": 16,
+  "batch": 8,
+  "accumulation": 1,
+  "probes": 8,
+  "times": 8,
+  "ode_steps": 40,
+  "epsilons": [
+    0.02,
+    0.1
+  ],
+  "source_sha256": "40f94580abbe0039fea76052225782e3f5b4cd24baaf4b92db8cf4914ccc16c6",
+  "prompt": "a photo of a cat",
+  "watermark": false,
+  "data": "CIFAR-10 training cats, disjoint fine-tuning/reference pools",
+  "data_caveat": "Prior inclusion in SD pretraining is unknown",
+  "protocol": "Uniform sigma Euler, CFG=1; t_generation=1-sigma; FP32 states",
+  "scope": "Low-resolution LoRA pilot; not full-parameter or native-resolution SD",
+  "outcome": "Paired FTSS curves, held-out flow loss and latent nearest neighbors",
+  "trainable_parameters": 18825216
+}

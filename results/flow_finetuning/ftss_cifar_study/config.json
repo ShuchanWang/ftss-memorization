@@ -1,0 +1,40 @@
+{
+  "arguments": {
+    "output": "table_runs/ftss_cifar_study",
+    "sizes": [
+      50,
+      200,
+      1000
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "steps": 3000,
+    "check_steps": [
+      0,
+      300,
+      1000,
+      3000
+    ],
+    "lr": 0.0001,
+    "batch_size": 64,
+    "eval_batch": 128,
+    "feature_batch": 32,
+    "samples": 500,
+    "sample_steps": 100,
+    "probes": 20,
+    "ode_steps": 200,
+    "device": "cuda"
+  },
+  "sources": {
+    "<external>/ckpt.pth": "8c4e9c2b5dacbeb6ee1dbd76733b03690a458f52d16f1dced2e609370d7002b1",
+    "run_ftss_cifar_study.py": "98dd2e027a814a55028679717599758bad29e08dae9f284f234b11903efb48a7",
+    "ftss_batched.py": "ebac5406cfc63e8ca5c169230718452d33f0ddd20db780676c0f286a2f6c2c7b",
+    "watermark_hf_flow_unet.py": "ccc5dbd3faa4b9f2c4377bb00d48ef941a0ed9cc89137ab0f4549b6e5b70b762",
+    "run_ftss_outcome_study.py": "83e7aac6fb34518e06b821b342eb2ef920c8673a51f0113532ff1203f10a10dc"
+  },
+  "clean_full_parameter_finetuning": true,
+  "feature_space": "Original Inception IMAGENET1K_V1, 2048-D pool features"
+}
